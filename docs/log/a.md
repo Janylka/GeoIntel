@@ -1,0 +1,5 @@
+## 2026-08-15 14:20 — fix/a-seed-and-migrations
+- Сделано: Успешно завершен Блок 0 для БД и задача A0. Исправлены конфликты миграций GeoAlchemy, исправлены ошибки транзакций SQLAlchemy, перемещены скрипты инициализации в правильную папку. Выполнен сидинг административных единиц и тестовых метрик (756 записей).
+- Файлы: geointel/db/migrations/versions/001_initial.py, geointel/scripts/ingest_admin_units.py, geointel/scripts/seed_dev_metrics.py
+- Решения: Удалил `op.create_index` для колонок `Geometry`, так как GeoAlchemy2 автоматически создает `gist` индексы. Добавил `db.commit()` перед `db.begin()` для совместимости с авто-транзакциями SQLAlchemy 2.0.
+- Незакрытое: скрипт `ingest_cropland_mask.py` является заглушкой, требуется реализация `ee.Initialize()` и вычислений в Earth Engine (задачи A1 и A2).

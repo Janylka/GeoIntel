@@ -32,24 +32,47 @@ PLANS: dict[Plan, PlanDef] = {
         id=Plan.FARMER,
         max_fields=5,
         price_tiyin_month=40000,
-        features=frozenset(["drought_status", "weather_forecast_7d", "season_history", "email_alerts"]),
+        features=frozenset(
+            ["drought_status", "weather_forecast_7d", "season_history", "email_alerts"]
+        ),
     ),
     Plan.FARM: PlanDef(
         id=Plan.FARM,
         max_fields=50,
         price_tiyin_month=250000,
-        features=frozenset(["drought_status", "weather_forecast_7d", "season_history", "email_alerts", "yield_forecast", "data_export"]),
+        features=frozenset(
+            [
+                "drought_status",
+                "weather_forecast_7d",
+                "season_history",
+                "email_alerts",
+                "yield_forecast",
+                "data_export",
+            ]
+        ),
     ),
     Plan.ORG: PlanDef(
         id=Plan.ORG,
         max_fields=None,
         price_tiyin_month=2000000,
-        features=frozenset(["drought_status", "weather_forecast_7d", "season_history", "email_alerts", "yield_forecast", "data_export", "full_district_access"]),
+        features=frozenset(
+            [
+                "drought_status",
+                "weather_forecast_7d",
+                "season_history",
+                "email_alerts",
+                "yield_forecast",
+                "data_export",
+                "full_district_access",
+            ]
+        ),
     ),
 }
 
+
 def can_use(plan: Plan, feature: str) -> bool:
     return feature in PLANS[plan].features
+
 
 def assert_field_limit(plan: Plan, current_count: int) -> None:
     plan_def = PLANS[plan]
