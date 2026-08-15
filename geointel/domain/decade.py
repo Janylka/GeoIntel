@@ -1,6 +1,5 @@
-import calendar
+from collections.abc import Generator
 from datetime import date, timedelta
-from typing import Generator
 
 
 def decade_of(d: date) -> int:

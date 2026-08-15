@@ -1,14 +1,6 @@
-[tool.uv]
-dev-dependencies = [
-    "ruff",
-    "mypy",
-    "pytest",
-    "pytest-cov",
-    "pre-commit",
-]
-
-[tool.uv.sources]
-geointel = { path = ".", editable = true }
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
 
 [project]
 name = "geointel"
@@ -26,9 +18,24 @@ dependencies = [
     "python-dotenv",
 ]
 
+[dependency-groups]
+dev = [
+    "ruff",
+    "mypy",
+    "pytest",
+    "pytest-cov",
+    "pre-commit",
+]
+
+[tool.setuptools.packages.find]
+include = ["geointel*", "db*", "contracts*"]
+
+[tool.uv.sources]
+geointel = { path = ".", editable = true }
+
 [tool.ruff]
 line-length = 100
-select = ["E", "F", "W", "I", "UP"]
+lint.select = ["E", "F", "W", "I", "UP"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["geointel"]

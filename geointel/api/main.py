@@ -1,7 +1,7 @@
-from fastapi import FastAPI, Depends
+from fastapi import Depends, FastAPI
 from sqlalchemy.orm import Session
 
-from geointel.db.session import get_db, engine
+from geointel.db.session import engine, get_db
 
 app = FastAPI(
     title="GeoIntel API",

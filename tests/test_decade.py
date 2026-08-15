@@ -1,6 +1,9 @@
 from datetime import date
+
 import pytest
+
 from geointel.domain import decade
+
 
 @pytest.mark.parametrize("input_date, expected_decade", [
     (date(2024, 5, 1), 1),

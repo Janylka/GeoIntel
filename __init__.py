@@ -16,5 +16,5 @@ def t(key: str, lang: str) -> str:
     Translates a key into the specified language.
     Falls back to Russian if the key or language is not found.
     """
-    return TRANSLATIONS.get(lang, TRANSLATIONS[DEFAULT_LANG]).get(key, 
+    return TRANSLATIONS.get(lang, TRANSLATIONS[DEFAULT_LANG]).get(key,
            TRANSLATIONS[DEFAULT_LANG].get(key, key))
