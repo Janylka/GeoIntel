@@ -1,3 +1,4 @@
+import logging
 from typing import Any
 
 from fastapi import APIRouter, Depends
@@ -9,7 +10,9 @@ from geointel.contracts.plans import Plan
 from geointel.db.models.billing import Invoice
 from geointel.db.models.customer import Customer
 from geointel.db.session import get_db
-from geointel.services.billing import create_invoice
+from geointel.services.billing import create_invoice, get_payment_details
+from geointel.services.email import send_email
+from geointel.services.email_templates import render_invoice
 
 router = APIRouter()
 
@@ -25,10 +28,26 @@ def request_invoice(
     db: Session = Depends(get_db),
 ) -> Any:
     invoice = create_invoice(db, current_user.id, request.plan)
+    payment_details = get_payment_details()
+
+    try:
+        subject, body = render_invoice(
+            current_user.name or current_user.email,
+            invoice.id,
+            invoice.plan,
+            invoice.amount_tiyin,
+            invoice.status,
+            current_user.lang,
+        )
+        send_email(current_user.email, subject, body)
+    except Exception:
+        logging.warning("Failed to send invoice email for invoice %s", invoice.id, exc_info=True)
+
     return {
         "invoice_id": invoice.id,
         "amount_tiyin": invoice.amount_tiyin,
         "status": invoice.status,
+        "payment_details": payment_details,
     }
 
 

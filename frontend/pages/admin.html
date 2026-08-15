@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GeoIntel | Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600&family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/style.css">
+<style>
+  body { font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: var(--bg-page); color: var(--text-primary); min-height: 100vh; line-height: 1.5; display:flex; flex-direction:column; }
+  .icon { display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; flex-shrink:0; stroke-width:2; stroke:currentColor; fill:none; stroke-linecap:round; stroke-linejoin:round; }
+  .icon-sm { width:14px; height:14px; }
+  .mono { font-family:'Roboto Mono', monospace; }
+  .header-top { background-color: var(--bg-header); color: var(--header-text); height:60px; padding:0 1.5rem; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--header-border); position:sticky; top:0; z-index:1000; box-shadow:0 2px 4px rgba(0,0,0,0.15); }
+  .header-left, .header-right { display:flex; align-items:center; gap:1rem; }
+  .brand-container { display:flex; align-items:center; gap:0.75rem; text-decoration:none; color:#fff; }
+  .brand-logo-icon { width:32px; height:32px; background:linear-gradient(135deg,#1565c0,#0d47a1); border:1px solid var(--accent-gold); border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; color:var(--accent-gold); }
+  .brand-title-wrap { display:flex; flex-direction:column; }
+  .brand-name { font-size:1.1rem; font-weight:700; letter-spacing:0.5px; }
+  .brand-name .intel { color:#90caf9; font-weight:400; }
+  .brand-tag { font-size:0.65rem; text-transform:uppercase; letter-spacing:1px; color:var(--accent-gold); font-weight:600; }
+  .header-btn { background: rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#fff; padding:6px 12px; font-size:0.78rem; font-weight:500; border-radius:var(--radius-sm); cursor:pointer; display:inline-flex; align-items:center; gap:0.4rem; text-decoration:none; }
+  .header-btn:hover { background: rgba(255,255,255,0.18); }
+  .header-btn-gold { background:var(--accent-gold); color:#1a237e; border-color:var(--accent-gold-dark); font-weight:600; }
+  .theme-toggle-btn { background: rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#fff; width:34px; height:34px; border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; cursor:pointer; }
+  .lang-switch { display:flex; gap:2px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); border-radius:var(--radius-sm); padding:2px; }
+  .lang-switch button { background:transparent; border:none; color:#c5cae9; font-size:0.7rem; font-weight:700; padding:4px 7px; border-radius:3px; cursor:pointer; text-transform:uppercase; }
+  .lang-switch button.active { background:var(--accent-gold); color:#1a237e; }
+  .app-body { display:flex; flex:1; position:relative; }
+  .sidebar { width:230px; background-color:var(--bg-sidebar); border-right:1px solid var(--sidebar-border); display:flex; flex-direction:column; flex-shrink:0; }
+  .sidebar-section { padding:1rem 0.75rem 0.5rem 0.75rem; }
+  .sidebar-heading { font-size:0.68rem; text-transform:uppercase; letter-spacing:1px; color:var(--sidebar-text-muted); font-weight:700; padding:0 0.6rem 0.5rem 0.6rem; }
+  .nav-list { list-style:none; display:flex; flex-direction:column; gap:2px; }
+  .nav-link { display:flex; align-items:center; gap:0.65rem; padding:0.55rem 0.75rem; color:var(--sidebar-text); text-decoration:none; font-size:0.84rem; font-weight:500; border-radius:var(--radius-sm); border-left:3px solid transparent; }
+  .nav-link:hover { background-color:var(--sidebar-hover); color:var(--primary); }
+  .nav-link.active { background-color:var(--sidebar-active-bg); color:var(--sidebar-active-text); border-left-color:var(--primary); font-weight:600; }
+  .main-content { flex:1; padding:1.25rem 1.5rem 2.5rem 1.5rem; overflow-x:hidden; display:flex; flex-direction:column; gap:1.25rem; max-width:800px; margin:0 auto; width:100%; }
+  .page-title { font-size:1.3rem; font-weight:700; color:var(--text-primary); margin-bottom:0.15rem; }
+  .warning-box { background:var(--status-warning-bg); border:1px solid var(--status-warning-border); color:var(--status-warning-text); border-radius:var(--radius-sm); padding:0.75rem 1rem; font-size:0.82rem; line-height:1.5; }
+  .form-row { display:flex; gap:0.75rem; align-items:end; }
+  .form-field { display:flex; flex-direction:column; gap:0.35rem; flex:1; }
+  .form-field label { font-size:0.78rem; font-weight:600; color:var(--text-secondary); }
+  .form-field input { background:var(--bg-page); border:1px solid var(--card-border); border-radius:var(--radius-sm); padding:0.5rem 0.65rem; font-size:0.85rem; font-family:inherit; color:var(--text-primary); }
+  .btn-primary { background:var(--primary); color:#fff; border:1px solid var(--primary); padding:0.6rem 1.1rem; border-radius:var(--radius-sm); font-size:0.85rem; font-weight:600; cursor:pointer; }
+  .btn-primary:hover { background:var(--primary-hover); }
+  .btn-primary:disabled { opacity:0.5; cursor:not-allowed; }
+  .error-box { background:var(--status-danger-bg); border:1px solid var(--status-danger-border); color:var(--status-danger-text); border-radius:var(--radius-sm); padding:0.65rem 0.85rem; font-size:0.8rem; display:none; margin-top:0.75rem; }
+  .result-box { background:var(--status-success-bg); border:1px solid var(--status-success-border); color:var(--status-success-text); border-radius:var(--radius-sm); padding:0.65rem 0.85rem; font-size:0.8rem; display:none; margin-top:0.75rem; }
+  .toast { position:fixed; bottom:20px; right:20px; background:var(--bg-header); color:#fff; padding:10px 16px; border-radius:var(--radius-sm); box-shadow:0 4px 12px rgba(0,0,0,0.25); border-left:4px solid var(--accent-gold); font-size:0.8rem; display:flex; align-items:center; gap:8px; z-index:9999; transform:translateY(100px); opacity:0; transition:all 0.3s cubic-bezier(0.4,0,0.2,1); }
+  .toast.show { transform:translateY(0); opacity:1; }
+  @media (max-width: 900px) { .sidebar { display:none; } }
+</style>
+</head>
+<body>
+
+<header class="header-top">
+  <div class="header-left">
+    <a href="/" class="brand-container">
+      <div class="brand-logo-icon"><svg class="icon" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline></svg></div>
+      <div class="brand-title-wrap">
+        <div class="brand-name">Geo<span class="intel">Intel</span></div>
+        <div class="brand-tag" data-i18n="brand.tag">Мониторинг засухи</div>
+      </div>
+    </a>
+  </div>
+  <div class="header-right">
+    <div class="lang-switch">
+      <button data-lang-btn="ru">RU</button>
+      <button data-lang-btn="ky">KY</button>
+      <button data-lang-btn="en">EN</button>
+    </div>
+    <button class="theme-toggle-btn" id="themeToggle" title="Toggle theme" aria-label="Toggle theme">
+      <svg class="icon" id="themeSun" viewBox="0 0 24 24" style="display:none;"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      <svg class="icon" id="themeMoon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+    </button>
+    <div id="authBox"></div>
+  </div>
+</header>
+
+<div class="app-body">
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-heading">GeoIntel</div>
+      <ul class="nav-list">
+        <li><a href="/" class="nav-link" data-nav-key="dashboard"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg><span data-i18n="nav.dashboard">Панель управления</span></a></li>
+        <li><a href="/pages/fields.html" class="nav-link" data-nav-key="fields"><svg class="icon" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline></svg><span data-i18n="nav.fields">Мои участки</span></a></li>
+        <li><a href="/pages/alerts.html" class="nav-link" data-nav-key="alerts"><svg class="icon" viewBox="0 0 24 24"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"></polygon><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg><span data-i18n="nav.alerts">Оповещения</span></a></li>
+        <li><a href="/pages/reports.html" class="nav-link" data-nav-key="reports"><svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg><span data-i18n="nav.reports">Отчёты</span></a></li>
+        <li><a href="/pages/billing.html" class="nav-link" data-nav-key="billing"><svg class="icon" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg><span data-i18n="nav.billing">Оплата</span></a></li>
+        <li><a href="/pages/ops.html" class="nav-link" data-nav-key="ops"><svg class="icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg><span data-i18n="nav.ops">Журнал агентов</span></a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Admin</div>
+      <ul class="nav-list">
+        <li><a href="/pages/admin.html" class="nav-link active" data-nav-key="admin"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle></svg><span data-i18n="admin.title">Администрирование</span></a></li>
+      </ul>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div>
+      <div class="page-title" data-i18n="admin.title">Администрирование</div>
+    </div>
+
+    <div class="warning-box" data-i18n="admin.dummy_warning">...</div>
+
+    <div class="corp-card">
+      <div class="corp-card-header">
+        <div class="card-title-group"><span class="card-title" data-i18n="admin.confirm_title">Подтверждение счёта</span></div>
+      </div>
+      <div class="corp-card-body">
+        <div class="auth-gate" id="adminAuthGate" style="display:none; background:var(--card-bg); border:1px solid var(--card-border); border-radius:var(--radius-md); padding:1rem; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
+          <span data-i18n="common.sign_in_required_body"></span>
+          <a class="btn-primary" style="text-decoration:none;" href="/pages/login.html" data-i18n="common.sign_in_link"></a>
+        </div>
+        <div id="confirmForm">
+          <div class="form-row">
+            <div class="form-field">
+              <label data-i18n="admin.invoice_id_label">ID счёта</label>
+              <input type="number" id="invoiceIdInput" min="1" step="1">
+            </div>
+            <button class="btn-primary" id="confirmBtn" data-i18n="admin.confirm_btn">Подтвердить счёт</button>
+          </div>
+          <div class="error-box" id="confirmError"></div>
+          <div class="result-box" id="confirmResult"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div id="toast" class="toast">
+  <svg class="icon" viewBox="0 0 24 24" style="color: var(--accent-gold);"><polyline points="20 6 9 17 4 12"></polyline></svg>
+  <span id="toastMsg"></span>
+</div>
+
+<script src="/assets/i18n.js"></script>
+<script src="/assets/api.js"></script>
+<script src="/assets/firebase-config.js"></script>
+<script src="/assets/auth.js"></script>
+<script src="/assets/page-common.js"></script>
+<script>
+(function () {
+  const P = window.GeoIntelPage;
+  P.initTheme();
+  P.initLangSwitch();
+
+  async function onConfirm() {
+    const errorBox = document.getElementById("confirmError");
+    const resultBox = document.getElementById("confirmResult");
+    errorBox.style.display = "none";
+    resultBox.style.display = "none";
+    const invoiceId = Number(document.getElementById("invoiceIdInput").value);
+    if (!invoiceId) return;
+    if (!P.requireAuthOrPrompt()) return;
+    const btn = document.getElementById("confirmBtn");
+    btn.disabled = true;
+    try {
+      const result = await window.GeoIntelAPI.confirmInvoice(invoiceId);
+      resultBox.textContent = `${window.GeoIntelI18n.t("admin.confirm_success")}: #${result.invoice_id} → ${result.invoice_status}`;
+      resultBox.style.display = "block";
+      P.showToast(window.GeoIntelI18n.t("admin.confirm_success"));
+    } catch (err) {
+      errorBox.textContent = err.message || window.GeoIntelI18n.t("admin.confirm_error");
+      errorBox.style.display = "block";
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  document.getElementById("confirmBtn").addEventListener("click", onConfirm);
+
+  P.initAuthUI((user) => {
+    document.getElementById("adminAuthGate").style.display = user ? "none" : "flex";
+    document.getElementById("confirmForm").style.display = user ? "block" : "none";
+  });
+})();
+</script>
+</body>
+</html>

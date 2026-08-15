@@ -1,0 +1,2976 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeoIntel Enterprise | Agricultural Geospatial Intelligence Platform</title>
+    <!-- Google Fonts: Roboto & Roboto Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600&family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <!-- Leaflet.js CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            /* Corporate Professional Theme (Light Mode) */
+            --bg-page: #f8fafc;
+            --bg-surface: #ffffff;
+            --bg-header: #1a237e;
+            --bg-header-sub: #151d69;
+            --header-text: #ffffff;
+            --header-subtext: #c5cae9;
+            --header-border: #283593;
+            
+            --bg-sidebar: #ffffff;
+            --sidebar-border: #e2e8f0;
+            --sidebar-text: #334155;
+            --sidebar-text-muted: #64748b;
+            --sidebar-active-bg: #e8eaf6;
+            --sidebar-active-text: #1a237e;
+            --sidebar-hover: #f1f5f9;
+
+            --primary: #1a237e;
+            --primary-hover: #0d165c;
+            --primary-light: #e8eaf6;
+            --primary-border: #c5cae9;
+            
+            --secondary: #1565c0;
+            --secondary-hover: #0d47a1;
+            --secondary-light: #e3f2fd;
+            
+            --accent-gold: #ffc107;
+            --accent-gold-dark: #ffa000;
+            --accent-gold-bg: #fff8e1;
+            --accent-gold-border: #ffe082;
+            
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #64748b;
+            --text-disabled: #94a3b8;
+            
+            --card-bg: #ffffff;
+            --card-border: #e2e8f0;
+            --card-border-subtle: #edf2f7;
+            --card-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.05), 0 1px 2px -1px rgba(15, 23, 42, 0.03);
+            --card-shadow-hover: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
+            
+            --table-header-bg: #f8fafc;
+            --table-header-text: #334155;
+            --table-row-even: #ffffff;
+            --table-row-odd: #f8fafc;
+            --table-row-hover: #f1f5f9;
+            --table-border: #e2e8f0;
+
+            --status-success-bg: #e8f5e9;
+            --status-success-text: #1b5e20;
+            --status-success-border: #c8e6c9;
+            
+            --status-warning-bg: #fff8e1;
+            --status-warning-text: #b78103;
+            --status-warning-border: #ffecb3;
+            
+            --status-danger-bg: #ffebee;
+            --status-danger-text: #b71c1c;
+            --status-danger-border: #ffcdd2;
+            
+            --status-info-bg: #e3f2fd;
+            --status-info-text: #0d47a1;
+            --status-info-border: #bbdefb;
+
+            --chart-grid: #e2e8f0;
+            --chart-text: #64748b;
+            
+            --radius-sm: 4px;
+            --radius-md: 6px;
+            --radius-lg: 8px;
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="dark"] {
+            /* Corporate Professional Theme (Dark Mode) */
+            --bg-page: #0a111c;
+            --bg-surface: #0d1b2a;
+            --bg-header: #070f1a;
+            --bg-header-sub: #0b1626;
+            --header-text: #f1f5f9;
+            --header-subtext: #8e9aaf;
+            --header-border: #1a2c42;
+            
+            --bg-sidebar: #0d1b2a;
+            --sidebar-border: #1b2e46;
+            --sidebar-text: #cbd5e1;
+            --sidebar-text-muted: #8e9aaf;
+            --sidebar-active-bg: #192d47;
+            --sidebar-active-text: #90caf9;
+            --sidebar-hover: #132438;
+
+            --primary: #3949ab;
+            --primary-hover: #5c6bc0;
+            --primary-light: #162238;
+            --primary-border: #283e60;
+            
+            --secondary: #2196f3;
+            --secondary-hover: #42a5f5;
+            --secondary-light: #122842;
+            
+            --accent-gold: #ffd54f;
+            --accent-gold-dark: #ffca28;
+            --accent-gold-bg: #292310;
+            --accent-gold-border: #524419;
+            
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --text-disabled: #64748b;
+            
+            --card-bg: #0d1b2a;
+            --card-border: #1b2e46;
+            --card-border-subtle: #17273d;
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+            --card-shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
+            
+            --table-header-bg: #132438;
+            --table-header-text: #e2e8f0;
+            --table-row-even: #0d1b2a;
+            --table-row-odd: #101f30;
+            --table-row-hover: #172a40;
+            --table-border: #1b2e46;
+
+            --status-success-bg: #0f2e1a;
+            --status-success-text: #81c784;
+            --status-success-border: #1b4d2c;
+            
+            --status-warning-bg: #332709;
+            --status-warning-text: #ffd54f;
+            --status-warning-border: #59430e;
+            
+            --status-danger-bg: #331317;
+            --status-danger-text: #e57373;
+            --status-danger-border: #5c1f26;
+            
+            --status-info-bg: #0f253d;
+            --status-info-text: #64b5f6;
+            --status-info-border: #1a426b;
+
+            --chart-grid: #1e324d;
+            --chart-text: #94a3b8;
+        }
+
+        /* Base Reset */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: var(--bg-page);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.25s ease, color 0.25s ease;
+        }
+
+        /* Icons */
+        .icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+            stroke-width: 2;
+            stroke: currentColor;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .icon-sm { width: 14px; height: 14px; }
+        .icon-lg { width: 22px; height: 22px; }
+
+        /* Typography */
+        .mono {
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        /* Top Header */
+        .header-top {
+            background-color: var(--bg-header);
+            color: var(--header-text);
+            height: 60px;
+            padding: 0 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--header-border);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .menu-toggle {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            border-radius: var(--radius-sm);
+            padding: 6px;
+            display: none;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .menu-toggle:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .brand-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: #ffffff;
+        }
+
+        .brand-logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #1565c0, #0d47a1);
+            border: 1px solid var(--accent-gold);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-gold);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+        }
+
+        .brand-title-wrap {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .brand-name {
+            font-size: 1.15rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .brand-name span.intel {
+            color: #90caf9;
+            font-weight: 400;
+        }
+
+        .brand-tag {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent-gold);
+            font-weight: 600;
+            line-height: 1;
+        }
+
+        .header-center {
+            display: flex;
+            align-items: center;
+            flex: 1;
+            max-width: 540px;
+            margin: 0 1.5rem;
+        }
+
+        /* Breadcrumbs */
+        .breadcrumbs-nav {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--header-subtext);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .breadcrumbs-nav a {
+            color: var(--header-subtext);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+        .breadcrumbs-nav a:hover {
+            color: #ffffff;
+            text-decoration: underline;
+        }
+
+        .breadcrumbs-nav .crumb-sep {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.75rem;
+        }
+
+        .breadcrumbs-nav .crumb-current {
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .sync-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.72rem;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 4px 10px;
+            border-radius: var(--radius-sm);
+            color: #e2e8f0;
+        }
+
+        .pulse-dot {
+            width: 7px;
+            height: 7px;
+            background-color: #4caf50;
+            border-radius: 50%;
+            box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(76, 175, 80, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+        }
+
+        .header-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            padding: 6px 12px;
+            font-size: 0.78rem;
+            font-weight: 500;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: var(--transition);
+        }
+
+        .header-btn:hover {
+            background: rgba(255, 255, 255, 0.18);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .header-btn-gold {
+            background: var(--accent-gold);
+            color: #1a237e;
+            border-color: var(--accent-gold-dark);
+            font-weight: 600;
+        }
+        .header-btn-gold:hover {
+            background: var(--accent-gold-dark);
+            color: #0d165c;
+        }
+
+        .theme-toggle-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            width: 34px;
+            height: 34px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .theme-toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: var(--accent-gold);
+        }
+
+        .user-profile-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: var(--radius-sm);
+            text-align: left;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: #283593;
+            border: 1px solid #7986cb;
+            color: #ffffff;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+
+        .user-meta {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.1;
+        }
+
+        .user-name {
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .user-org {
+            font-size: 0.68rem;
+            color: var(--header-subtext);
+        }
+
+        /* Sub-Header Toolbar */
+        .sub-header-bar {
+            background: var(--bg-surface);
+            border-bottom: 1px solid var(--card-border);
+            padding: 0.6rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.82rem;
+            z-index: 100;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+        }
+
+        .sub-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+        }
+
+        .zone-selector {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .custom-select {
+            background-color: var(--bg-surface);
+            color: var(--text-primary);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-sm);
+            padding: 4px 8px;
+            font-size: 0.8rem;
+            font-family: inherit;
+            cursor: pointer;
+            outline: none;
+            transition: var(--transition);
+        }
+        .custom-select:focus {
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 2px var(--primary-light);
+        }
+
+        .sub-bar-right {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .date-range-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: var(--text-secondary);
+            background: var(--table-header-bg);
+            border: 1px solid var(--card-border);
+            padding: 4px 10px;
+            border-radius: var(--radius-sm);
+            font-size: 0.76rem;
+            font-weight: 500;
+        }
+
+        /* Dashboard Container */
+        .app-body {
+            display: flex;
+            flex: 1;
+            position: relative;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            width: 240px;
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--sidebar-border);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            transition: var(--transition);
+            z-index: 900;
+        }
+
+        .sidebar-section {
+            padding: 1rem 0.75rem 0.5rem 0.75rem;
+        }
+
+        .sidebar-heading {
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--sidebar-text-muted);
+            font-weight: 700;
+            padding: 0 0.6rem 0.5rem 0.6rem;
+        }
+
+        .nav-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.55rem 0.75rem;
+            color: var(--sidebar-text);
+            text-decoration: none;
+            font-size: 0.84rem;
+            font-weight: 500;
+            border-radius: var(--radius-sm);
+            transition: var(--transition);
+            border-left: 3px solid transparent;
+        }
+
+        .nav-link-content {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+        }
+
+        .nav-link:hover {
+            background-color: var(--sidebar-hover);
+            color: var(--primary);
+        }
+
+        .nav-link.active {
+            background-color: var(--sidebar-active-bg);
+            color: var(--sidebar-active-text);
+            border-left-color: var(--primary);
+            font-weight: 600;
+        }
+
+        .nav-badge {
+            font-size: 0.7rem;
+            padding: 1px 6px;
+            border-radius: 10px;
+            background: var(--primary-light);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .nav-badge.alert-badge {
+            background: var(--accent-gold-bg);
+            color: var(--accent-gold-dark);
+            border: 1px solid var(--accent-gold-border);
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            padding: 1rem 0.75rem;
+            border-top: 1px solid var(--sidebar-border);
+        }
+
+        .system-status-box {
+            background: var(--bg-page);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-sm);
+            padding: 0.75rem;
+            font-size: 0.74rem;
+        }
+
+        .status-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.4rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .status-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+
+        .status-val {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 1.25rem 1.5rem 2.5rem 1.5rem;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        /* KPI / Metric Cards Grid */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1rem;
+        }
+
+        .kpi-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-sm);
+            padding: 1rem;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: var(--transition);
+            border-top: 3px solid var(--primary);
+            position: relative;
+        }
+
+        .kpi-card:hover {
+            box-shadow: var(--card-shadow-hover);
+            border-color: var(--primary-border);
+        }
+
+        .kpi-card.accent-gold {
+            border-top-color: var(--accent-gold);
+        }
+        .kpi-card.accent-blue {
+            border-top-color: var(--secondary);
+        }
+        .kpi-card.accent-green {
+            border-top-color: #2e7d32;
+        }
+
+        .kpi-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 0.4rem;
+        }
+
+        .kpi-label {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .kpi-icon-wrap {
+            width: 28px;
+            height: 28px;
+            border-radius: var(--radius-sm);
+            background: var(--table-header-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            border: 1px solid var(--card-border);
+        }
+
+        .kpi-value-row {
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .kpi-value {
+            font-size: 1.45rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+            line-height: 1.1;
+        }
+
+        .kpi-unit {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .kpi-footer {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.72rem;
+        }
+
+        .delta-positive {
+            color: #2e7d32;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .delta-negative {
+            color: #c62828;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .delta-neutral {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* Strict Grid Layout for Widgets */
+        .dashboard-grid-row {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 1.25rem;
+        }
+
+        /* Generic Corporate Card */
+        .corp-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-sm);
+            box-shadow: var(--card-shadow);
+            display: flex;
+            flex-direction: column;
+            transition: var(--transition);
+            overflow: hidden;
+        }
+
+        .corp-card-header {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--card-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--bg-surface);
+        }
+
+        .card-title-group {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .card-title {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .card-subtitle-badge {
+            font-size: 0.68rem;
+            background: var(--table-header-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+            padding: 2px 6px;
+            border-radius: var(--radius-sm);
+            font-weight: 500;
+        }
+
+        .card-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-btn {
+            background: transparent;
+            border: 1px solid var(--card-border);
+            color: var(--text-secondary);
+            padding: 4px 8px;
+            font-size: 0.72rem;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-family: inherit;
+            transition: var(--transition);
+        }
+        .card-btn:hover {
+            background: var(--table-header-bg);
+            color: var(--primary);
+            border-color: var(--primary-border);
+        }
+
+        .card-btn.active {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+
+        .corp-card-body {
+            padding: 1rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Map Specific Styles */
+        .col-map {
+            grid-column: span 7;
+            height: 480px;
+        }
+
+        .map-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            min-height: 400px;
+            border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+            overflow: hidden;
+        }
+
+        #leaflet-map {
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+        }
+
+        .map-overlay-tools {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 500;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(4px);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-sm);
+            padding: 4px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        [data-theme="dark"] .map-overlay-tools {
+            background: rgba(13, 27, 42, 0.92);
+        }
+
+        .map-tool-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .map-tool-btn:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .map-legend {
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+            z-index: 500;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(4px);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-sm);
+            padding: 8px 12px;
+            font-size: 0.7rem;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        [data-theme="dark"] .map-legend {
+            background: rgba(13, 27, 42, 0.92);
+        }
+
+        .legend-title {
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-primary);
+            margin-bottom: 2px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-secondary);
+        }
+
+        .legend-swatch {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+            border: 1px solid rgba(0,0,0,0.2);
+        }
+
+        /* Right Column (Crop Health & Alerts) */
+        .col-side-widgets {
+            grid-column: span 5;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            height: 480px;
+        }
+
+        .card-crop-health {
+            flex: 1.1;
+        }
+
+        .card-alerts-section {
+            flex: 0.9;
+        }
+
+        /* Crop Health Stats */
+        .crop-health-metric-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--card-border-subtle);
+        }
+
+        .ndvi-primary-stat {
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+        }
+
+        .ndvi-number {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+        }
+
+        .ndvi-badge {
+            background: var(--status-success-bg);
+            color: var(--status-success-text);
+            border: 1px solid var(--status-success-border);
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: var(--radius-sm);
+            text-transform: uppercase;
+        }
+
+        .ndvi-sub-metrics {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.74rem;
+        }
+
+        .ndvi-sub-col {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .ndvi-sub-label {
+            color: var(--text-muted);
+            font-size: 0.68rem;
+        }
+
+        .ndvi-sub-val {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .chart-box {
+            position: relative;
+            flex: 1;
+            width: 100%;
+            min-height: 120px;
+        }
+
+        /* Alerts List */
+        .alerts-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            overflow-y: auto;
+            max-height: 180px;
+            padding-right: 4px;
+        }
+
+        .alert-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.65rem;
+            padding: 0.6rem 0.75rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid transparent;
+            font-size: 0.75rem;
+            transition: var(--transition);
+        }
+
+        .alert-row:hover {
+            transform: translateX(2px);
+        }
+
+        .alert-row.warning {
+            background-color: var(--status-warning-bg);
+            border-color: var(--status-warning-border);
+            border-left: 3px solid var(--accent-gold-dark);
+        }
+
+        .alert-row.danger {
+            background-color: var(--status-danger-bg);
+            border-color: var(--status-danger-border);
+            border-left: 3px solid #c62828;
+        }
+
+        .alert-row.info {
+            background-color: var(--status-info-bg);
+            border-color: var(--status-info-border);
+            border-left: 3px solid var(--secondary);
+        }
+
+        .alert-icon-col {
+            margin-top: 1px;
+        }
+        .alert-row.warning .alert-icon-col { color: var(--status-warning-text); }
+        .alert-row.danger .alert-icon-col { color: var(--status-danger-text); }
+        .alert-row.info .alert-icon-col { color: var(--status-info-text); }
+
+        .alert-body {
+            flex: 1;
+        }
+
+        .alert-title-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2px;
+        }
+
+        .alert-title {
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .alert-time {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+        }
+
+        .alert-desc {
+            color: var(--text-secondary);
+            line-height: 1.3;
+        }
+
+        /* Middle Charts Row (Weather & Yield Forecast) */
+        .col-half {
+            grid-column: span 6;
+            height: 320px;
+        }
+
+        .weather-metrics-ribbon {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--table-header-bg);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-sm);
+            padding: 0.4rem 0.75rem;
+            margin-bottom: 0.75rem;
+            font-size: 0.75rem;
+        }
+
+        .weather-pill {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+        .weather-pill-label {
+            color: var(--text-muted);
+        }
+        .weather-pill-val {
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        /* Data Table (Field Registry) */
+        .col-full {
+            grid-column: span 12;
+        }
+
+        .table-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1rem;
+            background: var(--bg-surface);
+            border-bottom: 1px solid var(--card-border);
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .table-search-box {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--bg-page);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-sm);
+            padding: 4px 10px;
+            width: 280px;
+        }
+
+        .table-search-input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text-primary);
+            font-size: 0.8rem;
+            font-family: inherit;
+            width: 100%;
+        }
+
+        .table-filter-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .table-responsive-wrapper {
+            overflow-x: auto;
+            width: 100%;
+        }
+
+        .corp-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+            text-align: left;
+        }
+
+        .corp-table th {
+            background-color: var(--table-header-bg);
+            color: var(--table-header-text);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 0.5px;
+            padding: 0.65rem 1rem;
+            border-bottom: 1px solid var(--table-border);
+            white-space: nowrap;
+            user-select: none;
+        }
+
+        .corp-table th.sortable {
+            cursor: pointer;
+        }
+        .corp-table th.sortable:hover {
+            color: var(--primary);
+        }
+
+        .corp-table td {
+            padding: 0.65rem 1rem;
+            border-bottom: 1px solid var(--table-border);
+            color: var(--text-primary);
+            vertical-align: middle;
+            white-space: nowrap;
+        }
+
+        /* Alternating row colors for strict corporate look */
+        .corp-table tbody tr:nth-child(even) {
+            background-color: var(--table-row-even);
+        }
+
+        .corp-table tbody tr:nth-child(odd) {
+            background-color: var(--table-row-odd);
+        }
+
+        .corp-table tbody tr:hover {
+            background-color: var(--table-row-hover);
+        }
+
+        .badge-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: var(--radius-sm);
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .badge-status.optimal {
+            background: var(--status-success-bg);
+            color: var(--status-success-text);
+            border: 1px solid var(--status-success-border);
+        }
+
+        .badge-status.advisory {
+            background: var(--status-warning-bg);
+            color: var(--status-warning-text);
+            border: 1px solid var(--status-warning-border);
+        }
+
+        .badge-status.stress {
+            background: var(--status-danger-bg);
+            color: var(--status-danger-text);
+            border: 1px solid var(--status-danger-border);
+        }
+
+        .table-progress-wrap {
+            width: 80px;
+            height: 6px;
+            background: var(--card-border);
+            border-radius: 3px;
+            overflow: hidden;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 6px;
+        }
+
+        .table-progress-bar {
+            height: 100%;
+            border-radius: 3px;
+        }
+
+        .table-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1rem;
+            background: var(--bg-surface);
+            border-top: 1px solid var(--card-border);
+            font-size: 0.76rem;
+            color: var(--text-muted);
+        }
+
+        .pagination {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .page-btn {
+            background: var(--bg-page);
+            border: 1px solid var(--card-border);
+            color: var(--text-primary);
+            padding: 3px 8px;
+            border-radius: var(--radius-sm);
+            font-size: 0.74rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .page-btn:hover {
+            background: var(--table-header-bg);
+            border-color: var(--primary-border);
+        }
+        .page-btn.active {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* Toast notifications */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--bg-header);
+            color: #ffffff;
+            padding: 10px 16px;
+            border-radius: var(--radius-sm);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+            border-left: 4px solid var(--accent-gold);
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 9999;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* Leaflet Map Tooltips & Custom styles */
+        .custom-field-popup .leaflet-popup-content-wrapper {
+            background: var(--bg-surface);
+            color: var(--text-primary);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--card-border);
+            box-shadow: var(--card-shadow-hover);
+            padding: 0;
+            overflow: hidden;
+        }
+        .custom-field-popup .leaflet-popup-content {
+            margin: 0;
+            line-height: 1.4;
+        }
+        .popup-header {
+            background: var(--primary);
+            color: #ffffff;
+            padding: 8px 12px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .popup-body {
+            padding: 10px 12px;
+            font-size: 0.74rem;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            background: var(--card-bg);
+            color: var(--text-primary);
+        }
+        .popup-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            border-bottom: 1px dotted var(--card-border);
+            padding-bottom: 2px;
+        }
+        .popup-label { color: var(--text-muted); }
+        .popup-val { font-weight: 600; }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 1280px) {
+            .kpi-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .kpi-card:nth-child(4), .kpi-card:nth-child(5) {
+                grid-column: span 1;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .col-map {
+                grid-column: span 12;
+                height: 420px;
+            }
+            .col-side-widgets {
+                grid-column: span 12;
+                height: auto;
+            }
+            .card-crop-health {
+                height: 280px;
+            }
+            .card-alerts-section {
+                height: auto;
+            }
+            .col-half {
+                grid-column: span 12;
+                height: 320px;
+            }
+            .menu-toggle {
+                display: flex;
+            }
+            .sidebar {
+                position: fixed;
+                top: 60px;
+                bottom: 0;
+                left: 0;
+                transform: translateX(-100%);
+                box-shadow: 4px 0 12px rgba(0,0,0,0.25);
+            }
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+            .sidebar-backdrop {
+                display: none;
+                position: fixed;
+                inset: 0;
+                top: 60px;
+                background: rgba(0, 0, 0, 0.4);
+                z-index: 850;
+            }
+            .sidebar-backdrop.active {
+                display: block;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-top {
+                padding: 0 1rem;
+            }
+            .header-center {
+                display: none;
+            }
+            .sub-header-bar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+                padding: 0.6rem 1rem;
+            }
+            .sub-bar-left, .sub-bar-right {
+                width: 100%;
+                justify-content: space-between;
+            }
+            .main-content {
+                padding: 1rem;
+            }
+            .kpi-grid {
+                grid-template-columns: 1fr;
+            }
+            .user-meta {
+                display: none;
+            }
+            .table-toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .table-search-box {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Corporate Header -->
+    <header class="header-top">
+        <div class="header-left">
+            <button class="menu-toggle" id="menuToggle" aria-label="Toggle Navigation">
+                <svg class="icon" viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            </button>
+            <a href="#" class="brand-container">
+                <div class="brand-logo-icon">
+                    <svg class="icon" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+                </div>
+                <div class="brand-title-wrap">
+                    <div class="brand-name">Geo<span class="intel">Intel</span></div>
+                    <div class="brand-tag">Enterprise Agronomy</div>
+                </div>
+            </a>
+        </div>
+
+        <div class="header-center">
+            <nav class="breadcrumbs-nav" aria-label="Breadcrumb">
+                <a href="#">Enterprise Ag</a>
+                <span class="crumb-sep">/</span>
+                <a href="#">Central Asia Division</a>
+                <span class="crumb-sep">/</span>
+                <a href="#">Kyrgyzstan Operations</a>
+                <span class="crumb-sep">/</span>
+                <span class="crumb-current">Chuy & Issyk-Kul Field Registry</span>
+            </nav>
+        </div>
+
+        <div class="header-right">
+            <div class="sync-badge">
+                <div class="pulse-dot"></div>
+                <span>Sentinel-2 • 10m MultiSpec</span>
+            </div>
+
+            <button class="header-btn" id="refreshBtn" title="Sync Latest Satellite Telemetry">
+                <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg>
+                <span>Sync</span>
+            </button>
+
+            <button class="header-btn header-btn-gold" id="exportPdfBtn" title="Export Executive Agronomy Dossier">
+                <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                <span>Export Dossier</span>
+            </button>
+
+            <button class="theme-toggle-btn" id="themeToggle" title="Toggle Light/Dark Theme" aria-label="Toggle Theme">
+                <svg class="icon icon-sun" id="themeSun" viewBox="0 0 24 24" style="display:none;"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                <svg class="icon icon-moon" id="themeMoon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+            </button>
+
+            <button class="user-profile-btn" title="Organization Profile">
+                <div class="user-avatar">KA</div>
+                <div class="user-meta">
+                    <span class="user-name">A. Kerimov</span>
+                    <span class="user-org">Kyrgyz AgroHolding Ltd.</span>
+                </div>
+            </button>
+        </div>
+    </header>
+
+    <!-- Sub-Header Filter / Action Ribbon -->
+    <div class="sub-header-bar">
+        <div class="sub-bar-left">
+            <div class="zone-selector">
+                <svg class="icon icon-sm" viewBox="0 0 24 24"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line></svg>
+                <span>Territory:</span>
+                <select class="custom-select" id="zoneSelect">
+                    <option value="all">Kyrgyzstan — Nationwide (All Sectors)</option>
+                    <option value="chuy" selected>Chuy Valley Agro-Industrial Zone</option>
+                    <option value="issyk_kul">Issyk-Kul Highland Basin</option>
+                    <option value="naryn">Naryn High-Altitude Pastures</option>
+                    <option value="osh">Osh & Fergana Agricultural Belt</option>
+                </select>
+            </div>
+
+            <div class="zone-selector">
+                <span>Crop Regime:</span>
+                <select class="custom-select" id="cropSelect">
+                    <option value="all" selected>All Crop Cultivations</option>
+                    <option value="wheat">Winter Wheat (Triticum aestivum)</option>
+                    <option value="barley">Spring Barley (Hordeum vulgare)</option>
+                    <option value="sugar_beet">Sugar Beet (Beta vulgaris)</option>
+                    <option value="maize">Feed Maize (Zea mays)</option>
+                    <option value="orchard">Fruit & Apple Orchards</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="sub-bar-right">
+            <div class="date-range-badge">
+                <svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                <span>2026 Peak Season (Apr 1 – Aug 15)</span>
+            </div>
+            <button class="card-btn" id="filterResetBtn">
+                <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+                <span>Reset Filters</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Body Layout -->
+    <div class="app-body">
+        
+        <!-- Mobile Sidebar Backdrop -->
+        <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-heading">Operational Modules</div>
+                <ul class="nav-list">
+                    <li>
+                        <a href="#dashboard" class="nav-link active">
+                            <div class="nav-link-content">
+                                <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                                <span>Dashboard</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#fields" class="nav-link">
+                            <div class="nav-link-content">
+                                <svg class="icon" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+                                <span>Fields</span>
+                            </div>
+                            <span class="nav-badge">28</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#analytics" class="nav-link">
+                            <div class="nav-link-content">
+                                <svg class="icon" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                                <span>Analytics</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#reports" class="nav-link">
+                            <div class="nav-link-content">
+                                <svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                                <span>Reports</span>
+                            </div>
+                            <span class="nav-badge alert-badge">3 New</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-heading">Enterprise Telemetry</div>
+                <ul class="nav-list">
+                    <li>
+                        <a href="#satellite" class="nav-link">
+                            <div class="nav-link-content">
+                                <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                                <span>Satellite Feeds</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#soil-sensors" class="nav-link">
+                            <div class="nav-link-content">
+                                <svg class="icon" viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>
+                                <span>Soil Sensors</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#yield-models" class="nav-link">
+                            <div class="nav-link-content">
+                                <svg class="icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                                <span>Yield Forecaster</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#audit-log" class="nav-link">
+                            <div class="nav-link-content">
+                                <svg class="icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                                <span>Audit & Compliance</span>
+                            </div>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sidebar-footer">
+                <div class="system-status-box">
+                    <div class="status-header">
+                        <span>GIS Tile Infrastructure</span>
+                        <div class="pulse-dot"></div>
+                    </div>
+                    <div class="status-row">
+                        <span>Cluster Nodes:</span>
+                        <span class="status-val mono">128/130 Active</span>
+                    </div>
+                    <div class="status-row">
+                        <span>Sentinel-2 API:</span>
+                        <span class="status-val" style="color: #2e7d32; font-weight: 600;">Operational</span>
+                    </div>
+                    <div class="status-row">
+                        <span>Spatial Resolution:</span>
+                        <span class="status-val mono">10m / Ground</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Dashboard Workspace -->
+        <main class="main-content">
+
+            <!-- Top KPI Ribbon -->
+            <section class="kpi-grid" aria-label="Key Performance Indicators">
+                
+                <!-- KPI 1: Monitored Acreage -->
+                <div class="kpi-card accent-blue">
+                    <div class="kpi-header">
+                        <span class="kpi-label">Monitored Area</span>
+                        <div class="kpi-icon-wrap">
+                            <svg class="icon icon-sm" viewBox="0 0 24 24"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon></svg>
+                        </div>
+                    </div>
+                    <div class="kpi-value-row">
+                        <span class="kpi-value mono">14,850</span>
+                        <span class="kpi-unit">hectares</span>
+                    </div>
+                    <div class="kpi-footer">
+                        <span class="delta-positive">
+                            <svg class="icon icon-sm" viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                            +320 ha
+                        </span>
+                        <span class="delta-neutral">expanded in Q3 2026</span>
+                    </div>
+                </div>
+
+                <!-- KPI 2: Crop Health (NDVI) -->
+                <div class="kpi-card accent-green">
+                    <div class="kpi-header">
+                        <span class="kpi-label">Mean Fleet NDVI</span>
+                        <div class="kpi-icon-wrap" style="color: #2e7d32;">
+                            <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                        </div>
+                    </div>
+                    <div class="kpi-value-row">
+                        <span class="kpi-value mono">0.76</span>
+                        <span class="kpi-unit">index (0-1)</span>
+                    </div>
+                    <div class="kpi-footer">
+                        <span class="delta-positive">
+                            <svg class="icon icon-sm" viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                            +0.04
+                        </span>
+                        <span class="delta-neutral">vs regional baseline</span>
+                    </div>
+                </div>
+
+                <!-- KPI 3: Soil Moisture -->
+                <div class="kpi-card accent-blue">
+                    <div class="kpi-header">
+                        <span class="kpi-label">Soil Moisture</span>
+                        <div class="kpi-icon-wrap" style="color: var(--secondary);">
+                            <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>
+                        </div>
+                    </div>
+                    <div class="kpi-value-row">
+                        <span class="kpi-value mono">24.0%</span>
+                        <span class="kpi-unit">VWC</span>
+                    </div>
+                    <div class="kpi-footer">
+                        <span class="delta-neutral">
+                            Target: 22–28% | Balanced
+                        </span>
+                    </div>
+                </div>
+
+                <!-- KPI 4: Yield Forecast -->
+                <div class="kpi-card accent-gold">
+                    <div class="kpi-header">
+                        <span class="kpi-label">Yield Forecast</span>
+                        <div class="kpi-icon-wrap" style="color: var(--accent-gold-dark);">
+                            <svg class="icon icon-sm" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                        </div>
+                    </div>
+                    <div class="kpi-value-row">
+                        <span class="kpi-value mono">4.32</span>
+                        <span class="kpi-unit">t/ha (Wheat)</span>
+                    </div>
+                    <div class="kpi-footer">
+                        <span class="delta-positive">
+                            <svg class="icon icon-sm" viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                            +8.5%
+                        </span>
+                        <span class="delta-neutral">vs 5-yr actuals</span>
+                    </div>
+                </div>
+
+                <!-- KPI 5: Active Sensors -->
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <span class="kpi-label">Telemetry Fleet</span>
+                        <div class="kpi-icon-wrap">
+                            <svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
+                        </div>
+                    </div>
+                    <div class="kpi-value-row">
+                        <span class="kpi-value mono">128</span>
+                        <span class="kpi-unit">/ 130 nodes</span>
+                    </div>
+                    <div class="kpi-footer">
+                        <span class="delta-positive">98.5% uptime</span>
+                        <span class="delta-neutral">• 2 maint</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Row 1: Interactive Map + Crop Health & Alerts -->
+            <div class="dashboard-grid-row">
+                
+                <!-- Map Widget -->
+                <div class="corp-card col-map">
+                    <div class="corp-card-header">
+                        <div class="card-title-group">
+                            <svg class="icon" viewBox="0 0 24 24"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line></svg>
+                            <span class="card-title">Geospatial Field Telemetry & Satellite Imagery</span>
+                            <span class="card-subtitle-badge">Esri World Imagery • Kyrgyzstan [41.20°N, 74.77°E]</span>
+                        </div>
+                        <div class="card-controls">
+                            <button class="card-btn active" id="layerSatBtn">Satellite</button>
+                            <button class="card-btn" id="layerNdviBtn">NDVI Vectors</button>
+                            <button class="card-btn" id="fitBoundsBtn" title="Fit All Fields in View">
+                                <svg class="icon icon-sm" viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
+                                <span>Recenter</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="map-wrapper">
+                        <div id="leaflet-map"></div>
+
+                        <!-- Map Inset Tools -->
+                        <div class="map-overlay-tools">
+                            <button class="map-tool-btn" id="mapZoomIn" title="Zoom In">
+                                <svg class="icon icon-sm" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            </button>
+                            <button class="map-tool-btn" id="mapZoomOut" title="Zoom Out">
+                                <svg class="icon icon-sm" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            </button>
+                        </div>
+
+                        <!-- Map Legend -->
+                        <div class="map-legend">
+                            <div class="legend-title">NDVI Index / Health</div>
+                            <div class="legend-item">
+                                <div class="legend-swatch" style="background: #2e7d32;"></div>
+                                <span>High Vigor (0.75 - 0.90)</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-swatch" style="background: #8bc34a;"></div>
+                                <span>Moderate Vigor (0.60 - 0.74)</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-swatch" style="background: #ffc107;"></div>
+                                <span>Advisory / Monitoring (0.45 - 0.59)</span>
+                            </div>
+                            <div class="legend-item">
+                                <div class="legend-swatch" style="background: #e53935;"></div>
+                                <span>Moisture Stress (&lt; 0.45)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Side Widgets: Crop Health Card & Alerts Section -->
+                <div class="col-side-widgets">
+                    
+                    <!-- Crop Health (NDVI) Card -->
+                    <div class="corp-card card-crop-health">
+                        <div class="corp-card-header">
+                            <div class="card-title-group">
+                                <svg class="icon" viewBox="0 0 24 24" style="color: #2e7d32;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                                <span class="card-title">Crop Health Analysis</span>
+                            </div>
+                            <div class="card-controls">
+                                <span class="card-subtitle-badge">Sentinel-2 MSI</span>
+                            </div>
+                        </div>
+                        <div class="corp-card-body">
+                            <div class="crop-health-metric-bar">
+                                <div class="ndvi-primary-stat">
+                                    <span class="ndvi-number mono">0.76</span>
+                                    <span class="ndvi-badge">Optimal Health</span>
+                                </div>
+                                <div class="ndvi-sub-metrics">
+                                    <div class="ndvi-sub-col">
+                                        <span class="ndvi-sub-label">Growth Stage</span>
+                                        <span class="ndvi-sub-val">Grain Fill / Ripening</span>
+                                    </div>
+                                    <div class="ndvi-sub-col">
+                                        <span class="ndvi-sub-label">Canopy Cover</span>
+                                        <span class="ndvi-sub-val mono">88.4%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="chart-box">
+                                <canvas id="ndviTrendChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Alerts Section -->
+                    <div class="corp-card card-alerts-section">
+                        <div class="corp-card-header">
+                            <div class="card-title-group">
+                                <svg class="icon" viewBox="0 0 24 24" style="color: var(--accent-gold-dark);"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"></polygon><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                                <span class="card-title">Operational Alerts</span>
+                            </div>
+                            <span class="nav-badge alert-badge">3 Actionable</span>
+                        </div>
+                        <div class="corp-card-body" style="padding: 0.75rem;">
+                            <div class="alerts-container">
+                                
+                                <!-- Alert 1 -->
+                                <div class="alert-row warning">
+                                    <div class="alert-icon-col">
+                                        <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                                    </div>
+                                    <div class="alert-body">
+                                        <div class="alert-title-row">
+                                            <span class="alert-title">Moisture Deficit: Field #KG-104 (Chuy)</span>
+                                            <span class="alert-time mono">24m ago</span>
+                                        </div>
+                                        <div class="alert-desc">Soil moisture dropped to 19.8% (threshold: 22.0%). Automated drip cycle triggered.</div>
+                                    </div>
+                                </div>
+
+                                <!-- Alert 2 -->
+                                <div class="alert-row info">
+                                    <div class="alert-icon-col">
+                                        <svg class="icon icon-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                                    </div>
+                                    <div class="alert-body">
+                                        <div class="alert-title-row">
+                                            <span class="alert-title">NDVI Anomaly in Sector C2 (Issyk-Kul)</span>
+                                            <span class="alert-time mono">2h ago</span>
+                                        </div>
+                                        <div class="alert-desc">Subtle vegetative variance detected (-0.06). Agronomist field inspection dispatched.</div>
+                                    </div>
+                                </div>
+
+                                <!-- Alert 3 -->
+                                <div class="alert-row warning">
+                                    <div class="alert-icon-col">
+                                        <svg class="icon icon-sm" viewBox="0 0 24 24"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"></polygon></svg>
+                                    </div>
+                                    <div class="alert-body">
+                                        <div class="alert-title-row">
+                                            <span class="alert-title">Sensor Gateway Node Offline</span>
+                                            <span class="alert-time mono">5h ago</span>
+                                        </div>
+                                        <div class="alert-desc">Telemetry unit #CH-042 unreachable. Switched to fallback satellite LoRa uplink.</div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- Row 2: Weather/Soil Telemetry + Yield Forecast Charts -->
+            <div class="dashboard-grid-row">
+                
+                <!-- Weather & Soil Card -->
+                <div class="corp-card col-half">
+                    <div class="corp-card-header">
+                        <div class="card-title-group">
+                            <svg class="icon" viewBox="0 0 24 24" style="color: var(--secondary);"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>
+                            <span class="card-title">Soil Moisture & Precipitation Dynamics</span>
+                        </div>
+                        <div class="card-controls">
+                            <span class="card-subtitle-badge">Telemetry Array • Depth: 0–60cm</span>
+                        </div>
+                    </div>
+                    <div class="corp-card-body">
+                        <div class="weather-metrics-ribbon">
+                            <div class="weather-pill">
+                                <span class="weather-pill-label">Topsoil Moisture:</span>
+                                <span class="weather-pill-val mono">24.0%</span>
+                            </div>
+                            <div class="weather-pill">
+                                <span class="weather-pill-label">Subsoil (60cm):</span>
+                                <span class="weather-pill-val mono">28.4%</span>
+                            </div>
+                            <div class="weather-pill">
+                                <span class="weather-pill-label">14-Day Precip:</span>
+                                <span class="weather-pill-val mono">38.2 mm</span>
+                            </div>
+                            <div class="weather-pill">
+                                <span class="weather-pill-label">Evapotranspiration:</span>
+                                <span class="weather-pill-val mono">4.1 mm/day</span>
+                            </div>
+                        </div>
+                        <div class="chart-box">
+                            <canvas id="weatherSoilChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Yield Forecast Card -->
+                <div class="corp-card col-half">
+                    <div class="corp-card-header">
+                        <div class="card-title-group">
+                            <svg class="icon" viewBox="0 0 24 24" style="color: var(--accent-gold-dark);"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                            <span class="card-title">Yield Projection & Historical Benchmarks</span>
+                        </div>
+                        <div class="card-controls">
+                            <span class="card-subtitle-badge">ML Ensemble + Sentinel VCI</span>
+                        </div>
+                    </div>
+                    <div class="corp-card-body">
+                        <div class="weather-metrics-ribbon">
+                            <div class="weather-pill">
+                                <span class="weather-pill-label">2026 Target:</span>
+                                <span class="weather-pill-val mono">4.32 t/ha</span>
+                            </div>
+                            <div class="weather-pill">
+                                <span class="weather-pill-label">5-Yr Average:</span>
+                                <span class="weather-pill-val mono">3.98 t/ha</span>
+                            </div>
+                            <div class="weather-pill">
+                                <span class="weather-pill-label">Total Projected Harvest:</span>
+                                <span class="weather-pill-val mono">64,152 MT</span>
+                            </div>
+                            <div class="weather-pill">
+                                <span class="weather-pill-label">Confidence:</span>
+                                <span class="weather-pill-val mono" style="color: #2e7d32;">94.8%</span>
+                            </div>
+                        </div>
+                        <div class="chart-box">
+                            <canvas id="yieldForecastChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Row 3: Enterprise Field Registry Data Table -->
+            <div class="dashboard-grid-row">
+                <div class="corp-card col-full">
+                    <div class="corp-card-header">
+                        <div class="card-title-group">
+                            <svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                            <span class="card-title">Enterprise Field Registry & Real-Time Telemetry</span>
+                        </div>
+                        <div class="card-controls">
+                            <button class="card-btn" id="exportTableCsvBtn">
+                                <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                <span>Export CSV</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Filter / Search Toolbar -->
+                    <div class="table-toolbar">
+                        <div class="table-search-box">
+                            <svg class="icon icon-sm" viewBox="0 0 24 24" style="color: var(--text-muted);"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                            <input type="text" id="tableSearch" class="table-search-input" placeholder="Search by Field ID, Location, Crop...">
+                        </div>
+
+                        <div class="table-filter-group">
+                            <select class="custom-select" id="tableCropFilter">
+                                <option value="all">Filter: All Crops</option>
+                                <option value="Winter Wheat">Winter Wheat</option>
+                                <option value="Sugar Beet">Sugar Beet</option>
+                                <option value="Spring Barley">Spring Barley</option>
+                                <option value="Feed Maize">Feed Maize</option>
+                                <option value="Apple Orchard">Apple Orchard</option>
+                            </select>
+
+                            <select class="custom-select" id="tableStatusFilter">
+                                <option value="all">Filter: All Statuses</option>
+                                <option value="Optimal">Optimal</option>
+                                <option value="Advisory">Advisory</option>
+                                <option value="Moisture Stress">Moisture Stress</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Responsive Table -->
+                    <div class="table-responsive-wrapper">
+                        <table class="corp-table" id="fieldsTable">
+                            <thead>
+                                <tr>
+                                    <th class="sortable" data-sort="id">Field Identifier ▾</th>
+                                    <th class="sortable" data-sort="region">Administrative Region</th>
+                                    <th class="sortable" data-sort="crop">Cultivar / Crop</th>
+                                    <th class="sortable" data-sort="area">Area (ha)</th>
+                                    <th class="sortable" data-sort="ndvi">Current NDVI</th>
+                                    <th class="sortable" data-sort="moisture">Soil Moisture</th>
+                                    <th class="sortable" data-sort="yield">Projected Yield</th>
+                                    <th class="sortable" data-sort="status">Agronomic Status</th>
+                                    <th>Last Satellite Pass</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="fieldsTableBody">
+                                <!-- Row 1 -->
+                                <tr>
+                                    <td class="mono" style="font-weight: 600; color: var(--primary);">KG-CH-104</td>
+                                    <td>Chuy Valley (Sokuluk District)</td>
+                                    <td><strong>Winter Wheat</strong> (Krasnovodsk-4)</td>
+                                    <td class="mono">1,420 ha</td>
+                                    <td>
+                                        <div class="table-progress-wrap">
+                                            <div class="table-progress-bar" style="width: 76%; background: #2e7d32;"></div>
+                                        </div>
+                                        <span class="mono">0.76</span>
+                                    </td>
+                                    <td class="mono">21.4%</td>
+                                    <td class="mono">4.62 t/ha</td>
+                                    <td>
+                                        <span class="badge-status advisory">
+                                            <span class="pulse-dot" style="background:#f57f17; animation:none;"></span>
+                                            Advisory
+                                        </span>
+                                    </td>
+                                    <td class="mono" style="font-size: 0.72rem; color: var(--text-muted);">Today 10:42 UTC</td>
+                                    <td>
+                                        <button class="card-btn" onclick="focusField('KG-CH-104')" title="Locate Field on Map">
+                                            <svg class="icon icon-sm" viewBox="0 0 24 24"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon></svg>
+                                            <span>Locate</span>
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <!-- Row 2 -->
+                                <tr>
+                                    <td class="mono" style="font-weight: 600; color: var(--primary);">KG-CH-208</td>
+                                    <td>Chuy Valley (Kant Agro Sector)</td>
+                                    <td><strong>Sugar Beet</strong> (Beta-Altay)</td>
+                                    <td class="mono">980 ha</td>
+                                    <td>
+                                        <div class="table-progress-wrap">
+                                            <div class="table-progress-bar" style="width: 82%; background: #2e7d32;"></div>
+                                        </div>
+                                        <span class="mono">0.82</span>
+                                    </td>
+                                    <td class="mono">26.8%</td>
+                                    <td class="mono">48.50 t/ha</td>
+                                    <td>
+                                        <span class="badge-status optimal">
+                                            <span class="pulse-dot" style="background:#2e7d32; animation:none;"></span>
+                                            Optimal
+                                        </span>
+                                    </td>
+                                    <td class="mono" style="font-size: 0.72rem; color: var(--text-muted);">Today 10:42 UTC</td>
+                                    <td>
+                                        <button class="card-btn" onclick="focusField('KG-CH-208')" title="Locate Field on Map">
+                                            <svg class="icon icon-sm" viewBox="0 0 24 24"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon></svg>
+                                            <span>Locate</span>
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <!-- Row 3 -->
+                                <tr>
+                                    <td class="mono" style="font-weight: 600; color: var(--primary);">KG-IK-312</td>
+                                    <td>Issyk-Kul Basin (Tup District)</td>
+                                    <td><strong>Apple Orchard</strong> (Aport / Gala)</td>
+                                    <td class="mono">650 ha</td>
+                                    <td>
+                                        <div class="table-progress-wrap">
+                                            <div class="table-progress-bar" style="width: 68%; background: #8bc34a;"></div>
+                                        </div>
+                                        <span class="mono">0.68</span>
+                                    </td>
+                                    <td class="mono">23.5%</td>
+                                    <td class="mono">18.40 t/ha</td>
+                                    <td>
+                                        <span class="badge-status optimal">
+                                            <span class="pulse-dot" style="background:#2e7d32; animation:none;"></span>
+                                            Optimal
+                                        </span>
+                                    </td>
+                                    <td class="mono" style="font-size: 0.72rem; color: var(--text-muted);">Yesterday 11:15 UTC</td>
+                                    <td>
+                                        <button class="card-btn" onclick="focusField('KG-IK-312')" title="Locate Field on Map">
+                                            <svg class="icon icon-sm" viewBox="0 0 24 24"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon></svg>
+                                            <span>Locate</span>
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <!-- Row 4 -->
+                                <tr>
+                                    <td class="mono" style="font-weight: 600; color: var(--primary);">KG-CH-419</td>
+                                    <td>Chuy Valley (Tokmok East)</td>
+                                    <td><strong>Spring Barley</strong> (Ala-Too Elite)</td>
+                                    <td class="mono">1,150 ha</td>
+                                    <td>
+                                        <div class="table-progress-wrap">
+                                            <div class="table-progress-bar" style="width: 74%; background: #2e7d32;"></div>
+                                        </div>
+                                        <span class="mono">0.74</span>
+                                    </td>
+                                    <td class="mono">24.1%</td>
+                                    <td class="mono">3.85 t/ha</td>
+                                    <td>
+                                        <span class="badge-status optimal">
+                                            <span class="pulse-dot" style="background:#2e7d32; animation:none;"></span>
+                                            Optimal
+                                        </span>
+                                    </td>
+                                    <td class="mono" style="font-size: 0.72rem; color: var(--text-muted);">Today 10:42 UTC</td>
+                                    <td>
+                                        <button class="card-btn" onclick="focusField('KG-CH-419')" title="Locate Field on Map">
+                                            <svg class="icon icon-sm" viewBox="0 0 24 24"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon></svg>
+                                            <span>Locate</span>
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <!-- Row 5 -->
+                                <tr>
+                                    <td class="mono" style="font-weight: 600; color: var(--primary);">KG-CH-505</td>
+                                    <td>Chuy Valley (Kara-Balta West)</td>
+                                    <td><strong>Feed Maize</strong> (Pioneer Hybrid)</td>
+                                    <td class="mono">1,840 ha</td>
+                                    <td>
+                                        <div class="table-progress-wrap">
+                                            <div class="table-progress-bar" style="width: 79%; background: #2e7d32;"></div>
+                                        </div>
+                                        <span class="mono">0.79</span>
+                                    </td>
+                                    <td class="mono">25.3%</td>
+                                    <td class="mono">8.45 t/ha</td>
+                                    <td>
+                                        <span class="badge-status optimal">
+                                            <span class="pulse-dot" style="background:#2e7d32; animation:none;"></span>
+                                            Optimal
+                                        </span>
+                                    </td>
+                                    <td class="mono" style="font-size: 0.72rem; color: var(--text-muted);">Today 10:42 UTC</td>
+                                    <td>
+                                        <button class="card-btn" onclick="focusField('KG-CH-505')" title="Locate Field on Map">
+                                            <svg class="icon icon-sm" viewBox="0 0 24 24"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon></svg>
+                                            <span>Locate</span>
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <!-- Row 6 -->
+                                <tr>
+                                    <td class="mono" style="font-weight: 600; color: var(--primary);">KG-NR-611</td>
+                                    <td>Naryn Basin (Kochkor Valley)</td>
+                                    <td><strong>Forage Grass & Alfalfa</strong></td>
+                                    <td class="mono">2,200 ha</td>
+                                    <td>
+                                        <div class="table-progress-wrap">
+                                            <div class="table-progress-bar" style="width: 58%; background: #ffc107;"></div>
+                                        </div>
+                                        <span class="mono">0.58</span>
+                                    </td>
+                                    <td class="mono">18.9%</td>
+                                    <td class="mono">2.80 t/ha</td>
+                                    <td>
+                                        <span class="badge-status stress">
+                                            <span class="pulse-dot" style="background:#c62828; animation:none;"></span>
+                                            Moisture Stress
+                                        </span>
+                                    </td>
+                                    <td class="mono" style="font-size: 0.72rem; color: var(--text-muted);">2 Days ago</td>
+                                    <td>
+                                        <button class="card-btn" onclick="focusField('KG-NR-611')" title="Locate Field on Map">
+                                            <svg class="icon icon-sm" viewBox="0 0 24 24"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon></svg>
+                                            <span>Locate</span>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Table Footer Pagination -->
+                    <div class="table-footer">
+                        <span>Showing <strong>1 to 6</strong> of <strong>28</strong> monitored agricultural parcels</span>
+                        <div class="pagination">
+                            <button class="page-btn">Previous</button>
+                            <button class="page-btn active">1</button>
+                            <button class="page-btn">2</button>
+                            <button class="page-btn">3</button>
+                            <button class="page-btn">4</button>
+                            <button class="page-btn">Next</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Toast Notification Element -->
+    <div id="toast" class="toast">
+        <svg class="icon" viewBox="0 0 24 24" style="color: var(--accent-gold);"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        <span id="toastMsg">Action executed successfully</span>
+    </div>
+
+    <!-- Application Logic Scripts -->
+    <script>
+        // Global variables and state
+        let map;
+        let fieldPolygons = {};
+        let ndviChart, weatherChart, yieldChart;
+        let isDarkMode = false;
+
+        // Field Geospatial Coordinates & Data in Kyrgyzstan
+        const fieldsData = {
+            'KG-CH-104': {
+                name: 'Field #KG-CH-104 (Chuy Valley Sokuluk)',
+                crop: 'Winter Wheat',
+                area: 1420,
+                ndvi: 0.76,
+                moisture: '21.4%',
+                yieldEst: '4.62 t/ha',
+                status: 'Advisory (Irrigation Required)',
+                color: '#2e7d32',
+                coords: [
+                    [42.870, 74.320],
+                    [42.895, 74.340],
+                    [42.880, 74.385],
+                    [42.855, 74.360]
+                ]
+            },
+            'KG-CH-208': {
+                name: 'Field #KG-CH-208 (Kant Sugar Agro)',
+                crop: 'Sugar Beet',
+                area: 980,
+                ndvi: 0.82,
+                moisture: '26.8%',
+                yieldEst: '48.50 t/ha',
+                status: 'Optimal Health',
+                color: '#1b5e20',
+                coords: [
+                    [42.890, 74.850],
+                    [42.920, 74.870],
+                    [42.905, 74.920],
+                    [42.875, 74.895]
+                ]
+            },
+            'KG-IK-312': {
+                name: 'Field #KG-IK-312 (Issyk-Kul Tup Orchard)',
+                crop: 'Apple Orchard',
+                area: 650,
+                ndvi: 0.68,
+                moisture: '23.5%',
+                yieldEst: '18.40 t/ha',
+                status: 'Optimal Health',
+                color: '#8bc34a',
+                coords: [
+                    [42.720, 78.350],
+                    [42.750, 78.375],
+                    [42.735, 78.420],
+                    [42.705, 78.390]
+                ]
+            },
+            'KG-CH-419': {
+                name: 'Field #KG-CH-419 (Tokmok East Plain)',
+                crop: 'Spring Barley',
+                area: 1150,
+                ndvi: 0.74,
+                moisture: '24.1%',
+                yieldEst: '3.85 t/ha',
+                status: 'Optimal Health',
+                color: '#2e7d32',
+                coords: [
+                    [42.830, 75.320],
+                    [42.860, 75.350],
+                    [42.845, 75.400],
+                    [42.810, 75.370]
+                ]
+            },
+            'KG-CH-505': {
+                name: 'Field #KG-CH-505 (Kara-Balta Feed Maize)',
+                crop: 'Feed Maize',
+                area: 1840,
+                ndvi: 0.79,
+                moisture: '25.3%',
+                yieldEst: '8.45 t/ha',
+                status: 'Optimal Health',
+                color: '#1b5e20',
+                coords: [
+                    [42.810, 73.840],
+                    [42.845, 73.870],
+                    [42.825, 73.930],
+                    [42.790, 73.895]
+                ]
+            },
+            'KG-NR-611': {
+                name: 'Field #KG-NR-611 (Kochkor High Pasture)',
+                crop: 'Forage Grass & Alfalfa',
+                area: 2200,
+                ndvi: 0.58,
+                moisture: '18.9%',
+                yieldEst: '2.80 t/ha',
+                status: 'Moisture Stress',
+                color: '#ffc107',
+                coords: [
+                    [42.200, 75.720],
+                    [42.235, 75.760],
+                    [42.215, 75.820],
+                    [42.175, 75.780]
+                ]
+            }
+        };
+
+        // Initialize Application
+        document.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            initLeafletMap();
+            initCharts();
+            initEventHandlers();
+        });
+
+        // Theme Switcher Logic
+        function initTheme() {
+            const savedTheme = localStorage.getItem('geointel_theme') || 'light';
+            setTheme(savedTheme);
+        }
+
+        function setTheme(theme) {
+            isDarkMode = (theme === 'dark');
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('geointel_theme', theme);
+
+            const sunIcon = document.getElementById('themeSun');
+            const moonIcon = document.getElementById('themeMoon');
+
+            if (isDarkMode) {
+                sunIcon.style.display = 'block';
+                moonIcon.style.display = 'none';
+            } else {
+                sunIcon.style.display = 'none';
+                moonIcon.style.display = 'block';
+            }
+
+            // Update Chart.js themes
+            if (ndviChart && weatherChart && yieldChart) {
+                updateChartsTheme();
+            }
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            setTheme(newTheme);
+            showToast(`Switched to ${newTheme === 'dark' ? 'Enterprise Dark' : 'Corporate Light'} theme`);
+        }
+
+        // Initialize Leaflet Map
+        function initLeafletMap() {
+            // Centered on Kyrgyzstan [41.20, 74.77] (focusing initially on Chuy/Issyk-Kul agricultural corridor at zoom 8)
+            map = L.map('leaflet-map', {
+                center: [42.60, 75.40],
+                zoom: 8,
+                zoomControl: false,
+                attributionControl: true
+            });
+
+            // Esri Satellite World Imagery Tiles
+            const esriSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Tiles &copy; Esri &mdash; Sentinel-2 & USDA Ground Telemetry',
+                maxZoom: 18
+            }).addTo(map);
+
+            // Add sample field polygons
+            const boundsGroup = [];
+
+            Object.entries(fieldsData).forEach(([id, field]) => {
+                const polygon = L.polygon(field.coords, {
+                    color: '#ffc107',
+                    weight: 2,
+                    fillColor: field.color,
+                    fillOpacity: 0.65,
+                    dashArray: '3, 5'
+                }).addTo(map);
+
+                // Custom popup
+                const popupContent = `
+                    <div class="popup-header">
+                        <span>${id}</span>
+                        <span style="font-size:0.7rem; background:rgba(255,255,255,0.2); padding:1px 6px; border-radius:2px;">${field.crop}</span>
+                    </div>
+                    <div class="popup-body">
+                        <div class="popup-row">
+                            <span class="popup-label">Area:</span>
+                            <span class="popup-val">${field.area} ha</span>
+                        </div>
+                        <div class="popup-row">
+                            <span class="popup-label">NDVI Health:</span>
+                            <span class="popup-val" style="color: #2e7d32; font-weight:700;">${field.ndvi}</span>
+                        </div>
+                        <div class="popup-row">
+                            <span class="popup-label">Soil Moisture:</span>
+                            <span class="popup-val">${field.moisture}</span>
+                        </div>
+                        <div class="popup-row">
+                            <span class="popup-label">Est. Yield:</span>
+                            <span class="popup-val">${field.yieldEst}</span>
+                        </div>
+                        <div class="popup-row" style="border:none;">
+                            <span class="popup-label">Status:</span>
+                            <span class="popup-val">${field.status}</span>
+                        </div>
+                    </div>
+                `;
+
+                polygon.bindPopup(popupContent, {
+                    className: 'custom-field-popup',
+                    maxWidth: 260
+                });
+
+                // Hover effects
+                polygon.on('mouseover', function (e) {
+                    this.setStyle({
+                        weight: 3,
+                        color: '#ffffff',
+                        fillOpacity: 0.85,
+                        dashArray: ''
+                    });
+                });
+
+                polygon.on('mouseout', function (e) {
+                    this.setStyle({
+                        weight: 2,
+                        color: '#ffc107',
+                        fillOpacity: 0.65,
+                        dashArray: '3, 5'
+                    });
+                });
+
+                fieldPolygons[id] = polygon;
+                boundsGroup.push(polygon);
+            });
+
+            // Map zoom controls
+            document.getElementById('mapZoomIn').addEventListener('click', () => map.zoomIn());
+            document.getElementById('mapZoomOut').addEventListener('click', () => map.zoomOut());
+            document.getElementById('fitBoundsBtn').addEventListener('click', fitAllFields);
+        }
+
+        function fitAllFields() {
+            if (map && Object.keys(fieldPolygons).length > 0) {
+                const group = L.featureGroup(Object.values(fieldPolygons));
+                map.fitBounds(group.getBounds().pad(0.15));
+                showToast("Map viewport reset to all monitored parcels");
+            }
+        }
+
+        function focusField(id) {
+            if (fieldPolygons[id]) {
+                const poly = fieldPolygons[id];
+                map.flyToBounds(poly.getBounds().pad(0.4), { duration: 1.2 });
+                poly.openPopup();
+                showToast(`Focused on Field Identifier: ${id}`);
+            }
+        }
+
+        // Initialize Chart.js Graphs
+        function getChartColors() {
+            const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+            return {
+                grid: dark ? '#1e324d' : '#e2e8f0',
+                text: dark ? '#94a3b8' : '#64748b',
+                primary: dark ? '#3949ab' : '#1a237e',
+                secondary: dark ? '#42a5f5' : '#1565c0',
+                accentGold: dark ? '#ffd54f' : '#ffc107',
+                green: dark ? '#81c784' : '#2e7d32',
+                cardBg: dark ? '#0d1b2a' : '#ffffff'
+            };
+        }
+
+        function initCharts() {
+            const colors = getChartColors();
+
+            // Chart 1: NDVI Trend Line Chart
+            const ctxNdvi = document.getElementById('ndviTrendChart').getContext('2d');
+            
+            // Gradient fill
+            const gradNdvi = ctxNdvi.createLinearGradient(0, 0, 0, 160);
+            gradNdvi.addColorStop(0, 'rgba(21, 101, 192, 0.25)');
+            gradNdvi.addColorStop(1, 'rgba(21, 101, 192, 0.0)');
+
+            ndviChart = new Chart(ctxNdvi, {
+                type: 'line',
+                data: {
+                    labels: ['Apr 15', 'May 01', 'May 15', 'Jun 01', 'Jun 15', 'Jul 01', 'Jul 15', 'Aug 01', 'Aug 15 (Now)'],
+                    datasets: [
+                        {
+                            label: '2026 Actual NDVI',
+                            data: [0.38, 0.49, 0.62, 0.71, 0.74, 0.78, 0.77, 0.75, 0.76],
+                            borderColor: '#1565c0',
+                            backgroundColor: gradNdvi,
+                            borderWidth: 2.5,
+                            fill: true,
+                            tension: 0.35,
+                            pointBackgroundColor: '#1565c0',
+                            pointBorderColor: '#ffffff',
+                            pointBorderWidth: 1.5,
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        },
+                        {
+                            label: '5-Year Regional Baseline',
+                            data: [0.35, 0.44, 0.56, 0.65, 0.70, 0.72, 0.73, 0.71, 0.72],
+                            borderColor: '#94a3b8',
+                            borderWidth: 1.8,
+                            borderDash: [4, 4],
+                            fill: false,
+                            tension: 0.3,
+                            pointRadius: 0,
+                            pointHoverRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            align: 'end',
+                            labels: {
+                                color: colors.text,
+                                boxWidth: 12,
+                                boxHeight: 6,
+                                font: { size: 10, family: 'Roboto' }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: '#1a237e',
+                            titleFont: { size: 11, weight: 'bold' },
+                            bodyFont: { size: 10 },
+                            padding: 8,
+                            cornerRadius: 4
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: colors.grid, drawBorder: false },
+                            ticks: { color: colors.text, font: { size: 10 } }
+                        },
+                        y: {
+                            min: 0.2,
+                            max: 1.0,
+                            grid: { color: colors.grid, drawBorder: false },
+                            ticks: { color: colors.text, font: { size: 10 }, stepSize: 0.2 }
+                        }
+                    }
+                }
+            });
+
+            // Chart 2: Weather & Soil Moisture Combo Bar/Line Chart
+            const ctxWeather = document.getElementById('weatherSoilChart').getContext('2d');
+            weatherChart = new Chart(ctxWeather, {
+                type: 'bar',
+                data: {
+                    labels: ['Week 27', 'Week 28', 'Week 29', 'Week 30', 'Week 31', 'Week 32', 'Week 33 (Current)'],
+                    datasets: [
+                        {
+                            type: 'line',
+                            label: 'Topsoil Moisture (0-20cm %)',
+                            data: [26.5, 25.8, 23.2, 21.0, 25.4, 23.8, 24.0],
+                            borderColor: '#ffc107',
+                            backgroundColor: '#ffc107',
+                            borderWidth: 2.2,
+                            tension: 0.3,
+                            yAxisID: 'yMoisture',
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        },
+                        {
+                            type: 'line',
+                            label: 'Subsoil Moisture (60cm %)',
+                            data: [29.0, 28.5, 27.8, 27.2, 28.6, 28.1, 28.4],
+                            borderColor: '#2e7d32',
+                            backgroundColor: '#2e7d32',
+                            borderWidth: 1.8,
+                            borderDash: [3, 3],
+                            tension: 0.3,
+                            yAxisID: 'yMoisture',
+                            pointRadius: 3
+                        },
+                        {
+                            type: 'bar',
+                            label: 'Weekly Precipitation (mm)',
+                            data: [12.4, 8.2, 2.1, 0.0, 18.5, 6.2, 3.4],
+                            backgroundColor: 'rgba(21, 101, 192, 0.75)',
+                            borderColor: '#1565c0',
+                            borderWidth: 1,
+                            borderRadius: 3,
+                            yAxisID: 'yPrecip',
+                            barThickness: 16
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            align: 'end',
+                            labels: {
+                                color: colors.text,
+                                boxWidth: 10,
+                                boxHeight: 6,
+                                font: { size: 10, family: 'Roboto' }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: '#1a237e',
+                            cornerRadius: 4,
+                            padding: 8
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: colors.grid, drawBorder: false },
+                            ticks: { color: colors.text, font: { size: 10 } }
+                        },
+                        yMoisture: {
+                            type: 'linear',
+                            position: 'left',
+                            min: 10,
+                            max: 40,
+                            title: {
+                                display: true,
+                                text: 'Soil Moisture (VWC %)',
+                                color: colors.text,
+                                font: { size: 10 }
+                            },
+                            grid: { color: colors.grid, drawBorder: false },
+                            ticks: { color: colors.text, font: { size: 10 } }
+                        },
+                        yPrecip: {
+                            type: 'linear',
+                            position: 'right',
+                            min: 0,
+                            max: 30,
+                            title: {
+                                display: true,
+                                text: 'Precipitation (mm)',
+                                color: colors.text,
+                                font: { size: 10 }
+                            },
+                            grid: { drawOnChartArea: false },
+                            ticks: { color: colors.text, font: { size: 10 } }
+                        }
+                    }
+                }
+            });
+
+            // Chart 3: Yield Forecast & Historical Combo Bar+Line Chart
+            const ctxYield = document.getElementById('yieldForecastChart').getContext('2d');
+            yieldChart = new Chart(ctxYield, {
+                type: 'bar',
+                data: {
+                    labels: ['2021 Actual', '2022 Actual', '2023 Actual', '2024 Actual', '2025 Actual', '2026 Forecast (AI Model)'],
+                    datasets: [
+                        {
+                            type: 'bar',
+                            label: 'Yield (t/ha)',
+                            data: [3.82, 3.95, 4.12, 3.78, 4.21, 4.32],
+                            backgroundColor: [
+                                '#1a237e',
+                                '#1a237e',
+                                '#1a237e',
+                                '#1a237e',
+                                '#1a237e',
+                                '#ffc107' // Highlight 2026 with gold accent
+                            ],
+                            borderColor: [
+                                '#1565c0',
+                                '#1565c0',
+                                '#1565c0',
+                                '#1565c0',
+                                '#1565c0',
+                                '#ffa000'
+                            ],
+                            borderWidth: 1.5,
+                            borderRadius: 3,
+                            barThickness: 24
+                        },
+                        {
+                            type: 'line',
+                            label: 'Polynomial Trend Trajectory',
+                            data: [3.80, 3.92, 4.02, 4.10, 4.22, 4.35],
+                            borderColor: '#1565c0',
+                            borderWidth: 2,
+                            borderDash: [4, 4],
+                            tension: 0.35,
+                            pointRadius: 3,
+                            pointBackgroundColor: '#1565c0'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            align: 'end',
+                            labels: {
+                                color: colors.text,
+                                boxWidth: 10,
+                                boxHeight: 6,
+                                font: { size: 10, family: 'Roboto' }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: '#1a237e',
+                            cornerRadius: 4,
+                            padding: 8
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: colors.grid, drawBorder: false },
+                            ticks: { color: colors.text, font: { size: 10 } }
+                        },
+                        y: {
+                            min: 3.0,
+                            max: 5.0,
+                            title: {
+                                display: true,
+                                text: 'Grain Yield (Metric Tons / Hectare)',
+                                color: colors.text,
+                                font: { size: 10 }
+                            },
+                            grid: { color: colors.grid, drawBorder: false },
+                            ticks: { color: colors.text, font: { size: 10 }, stepSize: 0.5 }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateChartsTheme() {
+            const colors = getChartColors();
+            const charts = [ndviChart, weatherChart, yieldChart];
+
+            charts.forEach(chart => {
+                if (!chart) return;
+                
+                // Update scales
+                if (chart.options.scales) {
+                    Object.values(chart.options.scales).forEach(scale => {
+                        if (scale.grid) scale.grid.color = colors.grid;
+                        if (scale.ticks) scale.ticks.color = colors.text;
+                        if (scale.title) scale.title.color = colors.text;
+                    });
+                }
+                
+                // Update legend
+                if (chart.options.plugins && chart.options.plugins.legend) {
+                    chart.options.plugins.legend.labels.color = colors.text;
+                }
+
+                chart.update();
+            });
+        }
+
+        // DOM Interactions & Filters
+        function initEventHandlers() {
+            // Theme toggle
+            document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+
+            // Mobile menu toggle
+            const menuToggle = document.getElementById('menuToggle');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarBackdrop = document.getElementById('sidebarBackdrop');
+
+            menuToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('mobile-open');
+                sidebarBackdrop.classList.toggle('active');
+            });
+
+            sidebarBackdrop.addEventListener('click', () => {
+                sidebar.classList.remove('mobile-open');
+                sidebarBackdrop.classList.remove('active');
+            });
+
+            // Refresh telemetry button
+            document.getElementById('refreshBtn').addEventListener('click', () => {
+                showToast("Satellite Telemetry synchronizing... Sentinel-2 pass verified");
+            });
+
+            // Export Dossier button
+            document.getElementById('exportPdfBtn').addEventListener('click', () => {
+                showToast("Generating Executive Agronomy Dossier (PDF)... Download initiated");
+            });
+
+            // Export CSV Table button
+            document.getElementById('exportTableCsvBtn').addEventListener('click', () => {
+                showToast("Exporting Field Registry to CSV format...");
+            });
+
+            // Table Search Filter
+            const searchInput = document.getElementById('tableSearch');
+            const cropFilter = document.getElementById('tableCropFilter');
+            const statusFilter = document.getElementById('tableStatusFilter');
+
+            function filterTableRows() {
+                const query = searchInput.value.toLowerCase();
+                const crop = cropFilter.value.toLowerCase();
+                const status = statusFilter.value.toLowerCase();
+                
+                const rows = document.querySelectorAll('#fieldsTableBody tr');
+
+                rows.forEach(row => {
+                    const text = row.innerText.toLowerCase();
+                    const matchQuery = !query || text.includes(query);
+                    const matchCrop = crop === 'all' || text.includes(crop);
+                    const matchStatus = status === 'all' || text.includes(status);
+
+                    if (matchQuery && matchCrop && matchStatus) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            }
+
+            searchInput.addEventListener('input', filterTableRows);
+            cropFilter.addEventListener('change', filterTableRows);
+            statusFilter.addEventListener('change', filterTableRows);
+
+            // Reset filters
+            document.getElementById('filterResetBtn').addEventListener('click', () => {
+                document.getElementById('zoneSelect').value = 'all';
+                document.getElementById('cropSelect').value = 'all';
+                searchInput.value = '';
+                cropFilter.value = 'all';
+                statusFilter.value = 'all';
+                filterTableRows();
+                fitAllFields();
+                showToast("All filters restored to corporate baseline defaults");
+            });
+
+            // Layer toggle buttons on Map Card
+            const layerSatBtn = document.getElementById('layerSatBtn');
+            const layerNdviBtn = document.getElementById('layerNdviBtn');
+
+            layerSatBtn.addEventListener('click', () => {
+                layerSatBtn.classList.add('active');
+                layerNdviBtn.classList.remove('active');
+                showToast("Base Layer: High-Resolution Esri Satellite World Imagery");
+            });
+
+            layerNdviBtn.addEventListener('click', () => {
+                layerNdviBtn.classList.add('active');
+                layerSatBtn.classList.remove('active');
+                showToast("Overlay Layer: Sentinel-2 False-Color NDVI Spectral Vectors");
+            });
+        }
+
+        // Toast feedback notification
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const msgSpan = document.getElementById('toastMsg');
+            msgSpan.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3200);
+        }
+    </script>
+</body>
+</html>

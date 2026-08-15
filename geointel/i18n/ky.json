@@ -4,7 +4,15 @@
     "errors.not_found": "Объект табылган жок.",
     "alerts.threshold_breached": "{metric} көрсөткүчү босогодон өттү.",
     "email.welcome.subject": "GeoIntel'ге кош келиңиз",
+    "email.welcome.body": "Саламатсызбы, {name}! GeoIntel'де катталуу аяктады. Сиздин тарифиңиз: {plan}. Сиз участкаларыңыздын абалы боюнча эскертүүлөрдү аласыз.",
     "email.invoice.subject": "Төлөм үчүн эсеп №{invoice_id}",
+    "email.invoice.body": "Саламатсызбы, {name}! «{plan}» тарифи үчүн {amount} сом суммасына №{invoice_id} эсеби түзүлдү. Статусу: {status}.",
+    "email.payment_confirmed.subject": "Төлөм ырасталды — эсеп №{invoice_id}",
+    "email.payment_confirmed.body": "Саламатсызбы, {name}! №{invoice_id} эсеби боюнча төлөм ырасталды. «{plan}» тарифи иштетилди.",
+    "email.threshold.subject": "Эскертүү: {metric} — {severity}",
+    "email.threshold.body": "«{subject_name}» участогунда {metric} көрсөткүчү {decade} декадасында босогодон өттү ({severity}). GeoIntel каттоо баракчаңыздан участоктун абалын текшериңиз.",
+    "email.decade_summary.subject": "{decade} декадасы үчүн GeoIntel сводкасы",
+    "email.decade_summary.body": "Саламатсызбы, {name}! {decade} декадасы үчүн участктарыңыз боюнча кыскача сводка: {items}",
     "report.title": "{decade} декадасы үчүн GeoIntel отчету",
     "report.generated_at": "Түзүлдү {datetime}"
 }

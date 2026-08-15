@@ -1,5 +1,8 @@
+from pathlib import Path
+
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
@@ -46,3 +49,10 @@ def health_check(db: Session = Depends(get_db)) -> dict[str, str]:
         return {"status": "ok", "database": "ok"}
     except Exception:
         return {"status": "ok", "database": "error"}
+
+
+# Static frontend, served from the same origin as the API so auth cookies/tokens
+# and CORS stay simple. Must be mounted last: it's a catch-all for "/".
+FRONTEND_DIR = Path(__file__).resolve().parents[2] / "frontend"
+if FRONTEND_DIR.is_dir():
+    app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")

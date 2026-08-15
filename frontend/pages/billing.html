@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GeoIntel | Billing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600&family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/style.css">
+<style>
+  body { font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: var(--bg-page); color: var(--text-primary); min-height: 100vh; line-height: 1.5; display:flex; flex-direction:column; }
+  .icon { display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; flex-shrink:0; stroke-width:2; stroke:currentColor; fill:none; stroke-linecap:round; stroke-linejoin:round; }
+  .icon-sm { width:14px; height:14px; }
+  .mono { font-family:'Roboto Mono', monospace; }
+  .header-top { background-color: var(--bg-header); color: var(--header-text); height:60px; padding:0 1.5rem; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--header-border); position:sticky; top:0; z-index:1000; box-shadow:0 2px 4px rgba(0,0,0,0.15); }
+  .header-left, .header-right { display:flex; align-items:center; gap:1rem; }
+  .brand-container { display:flex; align-items:center; gap:0.75rem; text-decoration:none; color:#fff; }
+  .brand-logo-icon { width:32px; height:32px; background:linear-gradient(135deg,#1565c0,#0d47a1); border:1px solid var(--accent-gold); border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; color:var(--accent-gold); }
+  .brand-title-wrap { display:flex; flex-direction:column; }
+  .brand-name { font-size:1.1rem; font-weight:700; letter-spacing:0.5px; }
+  .brand-name .intel { color:#90caf9; font-weight:400; }
+  .brand-tag { font-size:0.65rem; text-transform:uppercase; letter-spacing:1px; color:var(--accent-gold); font-weight:600; }
+  .header-btn { background: rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#fff; padding:6px 12px; font-size:0.78rem; font-weight:500; border-radius:var(--radius-sm); cursor:pointer; display:inline-flex; align-items:center; gap:0.4rem; text-decoration:none; }
+  .header-btn:hover { background: rgba(255,255,255,0.18); }
+  .header-btn-gold { background:var(--accent-gold); color:#1a237e; border-color:var(--accent-gold-dark); font-weight:600; }
+  .theme-toggle-btn { background: rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#fff; width:34px; height:34px; border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; cursor:pointer; }
+  .lang-switch { display:flex; gap:2px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); border-radius:var(--radius-sm); padding:2px; }
+  .lang-switch button { background:transparent; border:none; color:#c5cae9; font-size:0.7rem; font-weight:700; padding:4px 7px; border-radius:3px; cursor:pointer; text-transform:uppercase; }
+  .lang-switch button.active { background:var(--accent-gold); color:#1a237e; }
+  .app-body { display:flex; flex:1; position:relative; }
+  .sidebar { width:230px; background-color:var(--bg-sidebar); border-right:1px solid var(--sidebar-border); display:flex; flex-direction:column; flex-shrink:0; }
+  .sidebar-section { padding:1rem 0.75rem 0.5rem 0.75rem; }
+  .sidebar-heading { font-size:0.68rem; text-transform:uppercase; letter-spacing:1px; color:var(--sidebar-text-muted); font-weight:700; padding:0 0.6rem 0.5rem 0.6rem; }
+  .nav-list { list-style:none; display:flex; flex-direction:column; gap:2px; }
+  .nav-link { display:flex; align-items:center; gap:0.65rem; padding:0.55rem 0.75rem; color:var(--sidebar-text); text-decoration:none; font-size:0.84rem; font-weight:500; border-radius:var(--radius-sm); border-left:3px solid transparent; }
+  .nav-link:hover { background-color:var(--sidebar-hover); color:var(--primary); }
+  .nav-link.active { background-color:var(--sidebar-active-bg); color:var(--sidebar-active-text); border-left-color:var(--primary); font-weight:600; }
+  .main-content { flex:1; padding:1.25rem 1.5rem 2.5rem 1.5rem; overflow-x:hidden; display:flex; flex-direction:column; gap:1.25rem; max-width:1200px; margin:0 auto; width:100%; }
+  .page-title { font-size:1.3rem; font-weight:700; color:var(--text-primary); margin-bottom:0.15rem; }
+  .plan-grid { display:grid; grid-template-columns: repeat(4, 1fr); gap:1rem; }
+  .plan-card { background:var(--card-bg); border:1px solid var(--card-border); border-radius:var(--radius-md); box-shadow:var(--card-shadow); padding:1.1rem; display:flex; flex-direction:column; gap:0.6rem; border-top:3px solid var(--primary); }
+  .plan-card.plan-farmer { border-top-color: var(--secondary); }
+  .plan-card.plan-farm { border-top-color: var(--accent-gold); }
+  .plan-card.plan-org { border-top-color: #2e7d32; }
+  .plan-name { font-size:0.95rem; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; }
+  .plan-price { font-size:1.3rem; font-weight:700; }
+  .plan-price-sub { font-size:0.7rem; color:var(--text-muted); }
+  .plan-meta { font-size:0.78rem; color:var(--text-secondary); }
+  .plan-features { list-style:none; display:flex; flex-direction:column; gap:0.3rem; font-size:0.76rem; color:var(--text-secondary); margin:0.25rem 0; }
+  .plan-features li::before { content: "✓ "; color:#2e7d32; font-weight:700; }
+  .btn-primary { background:var(--primary); color:#fff; border:1px solid var(--primary); padding:0.55rem 1rem; border-radius:var(--radius-sm); font-size:0.8rem; font-weight:600; cursor:pointer; margin-top:auto; }
+  .btn-primary:hover { background:var(--primary-hover); }
+  .btn-primary:disabled { opacity:0.5; cursor:not-allowed; }
+  .empty-state { text-align:center; padding:2rem; color:var(--text-muted); }
+  .toast { position:fixed; bottom:20px; right:20px; background:var(--bg-header); color:#fff; padding:10px 16px; border-radius:var(--radius-sm); box-shadow:0 4px 12px rgba(0,0,0,0.25); border-left:4px solid var(--accent-gold); font-size:0.8rem; display:flex; align-items:center; gap:8px; z-index:9999; transform:translateY(100px); opacity:0; transition:all 0.3s cubic-bezier(0.4,0,0.2,1); }
+  .toast.show { transform:translateY(0); opacity:1; }
+  @media (max-width: 1100px) { .plan-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 900px) { .sidebar { display:none; } }
+  @media (max-width: 560px) { .plan-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<header class="header-top">
+  <div class="header-left">
+    <a href="/" class="brand-container">
+      <div class="brand-logo-icon"><svg class="icon" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline></svg></div>
+      <div class="brand-title-wrap">
+        <div class="brand-name">Geo<span class="intel">Intel</span></div>
+        <div class="brand-tag" data-i18n="brand.tag">Мониторинг засухи</div>
+      </div>
+    </a>
+  </div>
+  <div class="header-right">
+    <div class="lang-switch">
+      <button data-lang-btn="ru">RU</button>
+      <button data-lang-btn="ky">KY</button>
+      <button data-lang-btn="en">EN</button>
+    </div>
+    <button class="theme-toggle-btn" id="themeToggle" title="Toggle theme" aria-label="Toggle theme">
+      <svg class="icon" id="themeSun" viewBox="0 0 24 24" style="display:none;"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      <svg class="icon" id="themeMoon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+    </button>
+    <div id="authBox"></div>
+  </div>
+</header>
+
+<div class="app-body">
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-heading">GeoIntel</div>
+      <ul class="nav-list">
+        <li><a href="/" class="nav-link" data-nav-key="dashboard"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg><span data-i18n="nav.dashboard">Панель управления</span></a></li>
+        <li><a href="/pages/fields.html" class="nav-link" data-nav-key="fields"><svg class="icon" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline></svg><span data-i18n="nav.fields">Мои участки</span></a></li>
+        <li><a href="/pages/alerts.html" class="nav-link" data-nav-key="alerts"><svg class="icon" viewBox="0 0 24 24"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"></polygon><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg><span data-i18n="nav.alerts">Оповещения</span></a></li>
+        <li><a href="/pages/reports.html" class="nav-link" data-nav-key="reports"><svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg><span data-i18n="nav.reports">Отчёты</span></a></li>
+        <li><a href="/pages/billing.html" class="nav-link" data-nav-key="billing"><svg class="icon" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg><span data-i18n="nav.billing">Оплата</span></a></li>
+        <li><a href="/pages/ops.html" class="nav-link" data-nav-key="ops"><svg class="icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg><span data-i18n="nav.ops">Журнал агентов</span></a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Admin</div>
+      <ul class="nav-list">
+        <li><a href="/pages/admin.html" class="nav-link" data-nav-key="admin"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle></svg><span data-i18n="admin.title">Администрирование</span></a></li>
+      </ul>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div>
+      <div class="page-title" data-i18n="billing.title">Оплата</div>
+    </div>
+
+    <div class="corp-card">
+      <div class="corp-card-header">
+        <div class="card-title-group"><span class="card-title" data-i18n="billing.plans_title">Тарифные планы</span></div>
+      </div>
+      <div class="corp-card-body">
+        <div class="plan-grid" id="planGrid"></div>
+      </div>
+    </div>
+
+    <div class="corp-card">
+      <div class="corp-card-header">
+        <div class="card-title-group"><span class="card-title" data-i18n="billing.invoices_title">Мои счета</span></div>
+      </div>
+      <div id="invoicesArea">
+        <div class="empty-state" data-i18n="common.sign_in_required_body">Эта функция доступна только зарегистрированным клиентам.</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div id="toast" class="toast">
+  <svg class="icon" viewBox="0 0 24 24" style="color: var(--accent-gold);"><polyline points="20 6 9 17 4 12"></polyline></svg>
+  <span id="toastMsg"></span>
+</div>
+
+<script src="/assets/i18n.js"></script>
+<script src="/assets/api.js"></script>
+<script src="/assets/firebase-config.js"></script>
+<script src="/assets/auth.js"></script>
+<script src="/assets/page-common.js"></script>
+<script>
+(function () {
+  const P = window.GeoIntelPage;
+  P.initTheme();
+  P.initLangSwitch();
+  P.markActiveNav("billing");
+
+  // Mirrors geointel/contracts/plans.py — frozen contract, kept in sync manually.
+  const PLANS = [
+    { id: "trial", cls: "plan-trial", max_fields: 1, price_tiyin_month: 0,
+      features: ["drought_status", "weather_forecast_7d"] },
+    { id: "farmer", cls: "plan-farmer", max_fields: 5, price_tiyin_month: 40000,
+      features: ["drought_status", "weather_forecast_7d", "season_history", "email_alerts"] },
+    { id: "farm", cls: "plan-farm", max_fields: 50, price_tiyin_month: 250000,
+      features: ["drought_status", "weather_forecast_7d", "season_history", "email_alerts", "yield_forecast", "data_export"] },
+    { id: "org", cls: "plan-org", max_fields: null, price_tiyin_month: 2000000,
+      features: ["drought_status", "weather_forecast_7d", "season_history", "email_alerts", "yield_forecast", "data_export", "full_district_access"] },
+  ];
+
+  function renderPlans() {
+    const t = window.GeoIntelI18n.t;
+    const grid = document.getElementById("planGrid");
+    grid.innerHTML = PLANS.map((p) => `
+      <div class="plan-card ${p.cls}">
+        <div class="plan-name mono">${p.id}</div>
+        <div>
+          <div class="plan-price mono">${p.price_tiyin_month === 0 ? t("billing.price_free") : P.formatTiyin(p.price_tiyin_month)}</div>
+          ${p.price_tiyin_month > 0 ? `<div class="plan-price-sub">/ mo</div>` : ""}
+        </div>
+        <div class="plan-meta">${t("billing.max_fields")}: <strong>${p.max_fields == null ? t("billing.max_fields_unlimited") : p.max_fields}</strong></div>
+        <ul class="plan-features">
+          ${p.features.map((f) => `<li>${t("billing.feature." + f)}</li>`).join("")}
+        </ul>
+        <button class="btn-primary" data-plan="${p.id}" data-i18n="billing.request_invoice">Запросить счёт</button>
+      </div>
+    `).join("");
+    grid.querySelectorAll("[data-plan]").forEach((btn) => {
+      btn.addEventListener("click", () => onRequestInvoice(btn.dataset.plan, btn));
+    });
+  }
+
+  async function onRequestInvoice(plan, btn) {
+    if (!P.requireAuthOrPrompt()) return;
+    btn.disabled = true;
+    try {
+      await window.GeoIntelAPI.requestInvoice(plan);
+      P.showToast(window.GeoIntelI18n.t("billing.invoice_requested_toast"));
+      loadInvoices();
+    } catch (err) {
+      P.showToast(err.message || window.GeoIntelI18n.t("common.error_generic"), true);
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  function invoicesTable(invoices) {
+    const t = window.GeoIntelI18n.t;
+    if (!invoices.length) {
+      return `<div class="empty-state" data-i18n="billing.no_invoices">${t("billing.no_invoices")}</div>`;
+    }
+    const rows = invoices.map((inv) => `
+      <tr>
+        <td class="mono">${inv.id}</td>
+        <td>${P.escapeHtml(inv.plan)}</td>
+        <td class="mono">${P.formatTiyin(inv.amount_tiyin)}</td>
+        <td><span class="badge-status ${P.statusBadgeClass(inv.status)}">${P.escapeHtml(inv.status)}</span></td>
+        <td class="mono">${P.formatDateTime(inv.issued_at)}</td>
+        <td class="mono">${inv.paid_at ? P.formatDateTime(inv.paid_at) : "—"}</td>
+        <td class="mono">${inv.confirmed_by || "—"}</td>
+      </tr>
+    `).join("");
+    return `
+      <div class="table-responsive-wrapper">
+        <table class="corp-table">
+          <thead><tr>
+            <th data-i18n="billing.col_id">ID</th>
+            <th data-i18n="billing.col_plan">Тариф</th>
+            <th data-i18n="billing.col_amount">Сумма</th>
+            <th data-i18n="billing.col_status">Статус</th>
+            <th data-i18n="billing.col_issued">Выставлен</th>
+            <th data-i18n="billing.col_paid">Оплачен</th>
+            <th data-i18n="billing.col_confirmed_by">Подтвердил</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  async function loadInvoices() {
+    const area = document.getElementById("invoicesArea");
+    if (!window.geointelAuth.currentUser) {
+      area.innerHTML = `<div class="empty-state" data-i18n="common.sign_in_required_body"></div>
+        <div style="text-align:center; padding-bottom:1.5rem;"><a class="btn-primary" style="text-decoration:none; display:inline-block;" href="/pages/login.html" data-i18n="common.sign_in_link"></a></div>`;
+      window.GeoIntelI18n.applyTranslations();
+      return;
+    }
+    area.innerHTML = `<div class="empty-state" data-i18n="common.loading">Загрузка...</div>`;
+    try {
+      const invoices = await window.GeoIntelAPI.getInvoices();
+      area.innerHTML = invoicesTable(invoices);
+      window.GeoIntelI18n.applyTranslations();
+    } catch (err) {
+      area.innerHTML = `<div class="empty-state">${P.escapeHtml(err.message || window.GeoIntelI18n.t("common.error_generic"))}</div>`;
+    }
+  }
+
+  renderPlans();
+  P.initAuthUI(() => loadInvoices());
+})();
+</script>
+</body>
+</html>

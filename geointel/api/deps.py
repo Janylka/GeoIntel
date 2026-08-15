@@ -1,11 +1,17 @@
+import logging
+
 import firebase_admin
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, Header, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from firebase_admin import auth
 from sqlalchemy.orm import Session
 
+from geointel.contracts.plans import Plan
 from geointel.db.models.customer import Customer
+from geointel.db.models.ops import AgentEvent
 from geointel.db.session import get_db
+from geointel.services.email import send_email
+from geointel.services.email_templates import render_welcome
 
 security = HTTPBearer()
 
@@ -15,12 +21,22 @@ if not firebase_admin._apps:
     except Exception:
         pass
 
+_SUPPORTED_LANGS = {"ru", "ky", "en"}
+
+
+def _lang_from_header(accept_language: str | None) -> str:
+    if not accept_language:
+        return "ru"
+    primary = accept_language.split(",")[0].strip().split("-")[0].lower()
+    return primary if primary in _SUPPORTED_LANGS else "ru"
+
 
 def get_current_user(
-    token: HTTPAuthorizationCredentials = Depends(security), db: Session = Depends(get_db)
+    token: HTTPAuthorizationCredentials = Depends(security),
+    accept_language: str | None = Header(None),
+    db: Session = Depends(get_db),
 ) -> Customer:
     try:
-        # В DEV среде, если нет ключа, можно замокать, но по заданию нужна firebase auth
         decoded_token = auth.verify_id_token(token.credentials)
         uid = decoded_token.get("uid")
     except Exception:
@@ -31,10 +47,33 @@ def get_current_user(
         )
 
     customer = db.query(Customer).filter(Customer.auth_uid == uid).first()
-    if not customer:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not registered in database",
-            headers={"WWW-Authenticate": "Bearer"},
+    if customer:
+        return customer
+
+    # First sign-in: find-or-create per spec, not a 401. The customer's email
+    # comes from the verified Firebase token, never from client input.
+    email = decoded_token.get("email") or f"{uid}@unknown.geointel"
+    lang = _lang_from_header(accept_language)
+    customer = Customer(auth_uid=uid, email=email, plan=Plan.TRIAL.value, lang=lang)
+    db.add(customer)
+    db.commit()
+    db.refresh(customer)
+
+    db.add(
+        AgentEvent(
+            agent="concierge",
+            action="customer_registered",
+            subject=str(customer.id),
+            payload_json={"auth_uid": uid, "email": email, "plan": customer.plan, "lang": lang},
+            status="ok",
         )
+    )
+    db.commit()
+
+    try:
+        subject, body = render_welcome(customer.name or customer.email, customer.plan, lang)
+        send_email(customer.email, subject, body)
+    except Exception:
+        logging.warning("Failed to send welcome email to %s", customer.email, exc_info=True)
+
     return customer

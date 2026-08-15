@@ -4,7 +4,15 @@
     "errors.not_found": "Object not found.",
     "alerts.threshold_breached": "Metric {metric} has breached a threshold.",
     "email.welcome.subject": "Welcome to GeoIntel",
+    "email.welcome.body": "Hello, {name}! Your GeoIntel registration is complete. Your plan: {plan}. You will receive alerts about your fields' status.",
     "email.invoice.subject": "Invoice #{invoice_id}",
+    "email.invoice.body": "Hello, {name}! Invoice #{invoice_id} for the \"{plan}\" plan has been issued for {amount} som. Status: {status}.",
+    "email.payment_confirmed.subject": "Payment confirmed — invoice #{invoice_id}",
+    "email.payment_confirmed.body": "Hello, {name}! Payment for invoice #{invoice_id} has been confirmed. The \"{plan}\" plan is now active.",
+    "email.threshold.subject": "Alert: {metric} — {severity}",
+    "email.threshold.body": "Field \"{subject_name}\" has {metric} breaching a threshold ({severity}) for decade {decade}. Check your field's status in the GeoIntel dashboard.",
+    "email.decade_summary.subject": "GeoIntel summary for decade {decade}",
+    "email.decade_summary.body": "Hello, {name}! Here is a short summary of your fields for decade {decade}: {items}",
     "report.title": "GeoIntel Report for decade {decade}",
     "report.generated_at": "Generated on {datetime}"
 }

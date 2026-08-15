@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GeoIntel | Reports</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600&family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/style.css">
+<style>
+  body { font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: var(--bg-page); color: var(--text-primary); min-height: 100vh; line-height: 1.5; display:flex; flex-direction:column; }
+  .icon { display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; flex-shrink:0; stroke-width:2; stroke:currentColor; fill:none; stroke-linecap:round; stroke-linejoin:round; }
+  .icon-sm { width:14px; height:14px; }
+  .mono { font-family:'Roboto Mono', monospace; }
+  .header-top { background-color: var(--bg-header); color: var(--header-text); height:60px; padding:0 1.5rem; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--header-border); position:sticky; top:0; z-index:1000; box-shadow:0 2px 4px rgba(0,0,0,0.15); }
+  .header-left, .header-right { display:flex; align-items:center; gap:1rem; }
+  .brand-container { display:flex; align-items:center; gap:0.75rem; text-decoration:none; color:#fff; }
+  .brand-logo-icon { width:32px; height:32px; background:linear-gradient(135deg,#1565c0,#0d47a1); border:1px solid var(--accent-gold); border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; color:var(--accent-gold); }
+  .brand-title-wrap { display:flex; flex-direction:column; }
+  .brand-name { font-size:1.1rem; font-weight:700; letter-spacing:0.5px; }
+  .brand-name .intel { color:#90caf9; font-weight:400; }
+  .brand-tag { font-size:0.65rem; text-transform:uppercase; letter-spacing:1px; color:var(--accent-gold); font-weight:600; }
+  .header-btn { background: rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#fff; padding:6px 12px; font-size:0.78rem; font-weight:500; border-radius:var(--radius-sm); cursor:pointer; display:inline-flex; align-items:center; gap:0.4rem; text-decoration:none; }
+  .header-btn:hover { background: rgba(255,255,255,0.18); }
+  .header-btn-gold { background:var(--accent-gold); color:#1a237e; border-color:var(--accent-gold-dark); font-weight:600; }
+  .theme-toggle-btn { background: rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#fff; width:34px; height:34px; border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; cursor:pointer; }
+  .lang-switch { display:flex; gap:2px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); border-radius:var(--radius-sm); padding:2px; }
+  .lang-switch button { background:transparent; border:none; color:#c5cae9; font-size:0.7rem; font-weight:700; padding:4px 7px; border-radius:3px; cursor:pointer; text-transform:uppercase; }
+  .lang-switch button.active { background:var(--accent-gold); color:#1a237e; }
+  .app-body { display:flex; flex:1; position:relative; }
+  .sidebar { width:230px; background-color:var(--bg-sidebar); border-right:1px solid var(--sidebar-border); display:flex; flex-direction:column; flex-shrink:0; }
+  .sidebar-section { padding:1rem 0.75rem 0.5rem 0.75rem; }
+  .sidebar-heading { font-size:0.68rem; text-transform:uppercase; letter-spacing:1px; color:var(--sidebar-text-muted); font-weight:700; padding:0 0.6rem 0.5rem 0.6rem; }
+  .nav-list { list-style:none; display:flex; flex-direction:column; gap:2px; }
+  .nav-link { display:flex; align-items:center; gap:0.65rem; padding:0.55rem 0.75rem; color:var(--sidebar-text); text-decoration:none; font-size:0.84rem; font-weight:500; border-radius:var(--radius-sm); border-left:3px solid transparent; }
+  .nav-link:hover { background-color:var(--sidebar-hover); color:var(--primary); }
+  .nav-link.active { background-color:var(--sidebar-active-bg); color:var(--sidebar-active-text); border-left-color:var(--primary); font-weight:600; }
+  .main-content { flex:1; padding:1.25rem 1.5rem 2.5rem 1.5rem; overflow-x:hidden; display:flex; flex-direction:column; gap:1.25rem; max-width:1100px; margin:0 auto; width:100%; }
+  .page-title { font-size:1.3rem; font-weight:700; color:var(--text-primary); margin-bottom:0.15rem; }
+  .form-grid { display:grid; grid-template-columns: repeat(4, 1fr); gap:1rem; align-items:end; }
+  .form-field { display:flex; flex-direction:column; gap:0.35rem; }
+  .form-field label { font-size:0.78rem; font-weight:600; color:var(--text-secondary); }
+  .form-field input, .form-field select { background:var(--bg-page); border:1px solid var(--card-border); border-radius:var(--radius-sm); padding:0.5rem 0.65rem; font-size:0.85rem; font-family:inherit; color:var(--text-primary); }
+  .hint { font-size:0.72rem; color:var(--text-muted); margin-top:0.25rem; }
+  .btn-primary { background:var(--primary); color:#fff; border:1px solid var(--primary); padding:0.6rem 1.1rem; border-radius:var(--radius-sm); font-size:0.85rem; font-weight:600; cursor:pointer; }
+  .btn-primary:hover { background:var(--primary-hover); }
+  .btn-primary:disabled { opacity:0.5; cursor:not-allowed; }
+  .btn-secondary { background:transparent; color:var(--primary); border:1px solid var(--primary-border); padding:0.6rem 1.1rem; border-radius:var(--radius-sm); font-size:0.85rem; font-weight:600; cursor:pointer; }
+  .btn-secondary:disabled { opacity:0.5; cursor:not-allowed; }
+  .explanation-box { background:var(--table-header-bg); border:1px solid var(--card-border); border-radius:var(--radius-sm); padding:1rem; font-size:0.88rem; line-height:1.6; white-space:pre-wrap; }
+  .result-row { display:flex; justify-content:space-between; padding:0.4rem 0; border-bottom:1px dotted var(--card-border); font-size:0.82rem; }
+  .result-row:last-child { border-bottom:none; }
+  .note-box { background:var(--status-info-bg); border:1px solid var(--status-info-border); color:var(--status-info-text); border-radius:var(--radius-sm); padding:0.65rem 0.85rem; font-size:0.8rem; }
+  .error-box { background:var(--status-danger-bg); border:1px solid var(--status-danger-border); color:var(--status-danger-text); border-radius:var(--radius-sm); padding:0.65rem 0.85rem; font-size:0.8rem; display:none; }
+  .auth-gate { background:var(--card-bg); border:1px solid var(--card-border); border-radius:var(--radius-md); padding:1.25rem; display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; }
+  .toast { position:fixed; bottom:20px; right:20px; background:var(--bg-header); color:#fff; padding:10px 16px; border-radius:var(--radius-sm); box-shadow:0 4px 12px rgba(0,0,0,0.25); border-left:4px solid var(--accent-gold); font-size:0.8rem; display:flex; align-items:center; gap:8px; z-index:9999; transform:translateY(100px); opacity:0; transition:all 0.3s cubic-bezier(0.4,0,0.2,1); }
+  .toast.show { transform:translateY(0); opacity:1; }
+  @media (max-width: 900px) { .sidebar { display:none; } .form-grid { grid-template-columns: 1fr 1fr; } }
+</style>
+</head>
+<body>
+
+<header class="header-top">
+  <div class="header-left">
+    <a href="/" class="brand-container">
+      <div class="brand-logo-icon"><svg class="icon" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline></svg></div>
+      <div class="brand-title-wrap">
+        <div class="brand-name">Geo<span class="intel">Intel</span></div>
+        <div class="brand-tag" data-i18n="brand.tag">Мониторинг засухи</div>
+      </div>
+    </a>
+  </div>
+  <div class="header-right">
+    <div class="lang-switch">
+      <button data-lang-btn="ru">RU</button>
+      <button data-lang-btn="ky">KY</button>
+      <button data-lang-btn="en">EN</button>
+    </div>
+    <button class="theme-toggle-btn" id="themeToggle" title="Toggle theme" aria-label="Toggle theme">
+      <svg class="icon" id="themeSun" viewBox="0 0 24 24" style="display:none;"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      <svg class="icon" id="themeMoon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+    </button>
+    <div id="authBox"></div>
+  </div>
+</header>
+
+<div class="app-body">
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-heading">GeoIntel</div>
+      <ul class="nav-list">
+        <li><a href="/" class="nav-link" data-nav-key="dashboard"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg><span data-i18n="nav.dashboard">Панель управления</span></a></li>
+        <li><a href="/pages/fields.html" class="nav-link" data-nav-key="fields"><svg class="icon" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline></svg><span data-i18n="nav.fields">Мои участки</span></a></li>
+        <li><a href="/pages/alerts.html" class="nav-link" data-nav-key="alerts"><svg class="icon" viewBox="0 0 24 24"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"></polygon><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg><span data-i18n="nav.alerts">Оповещения</span></a></li>
+        <li><a href="/pages/reports.html" class="nav-link" data-nav-key="reports"><svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg><span data-i18n="nav.reports">Отчёты</span></a></li>
+        <li><a href="/pages/billing.html" class="nav-link" data-nav-key="billing"><svg class="icon" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg><span data-i18n="nav.billing">Оплата</span></a></li>
+        <li><a href="/pages/ops.html" class="nav-link" data-nav-key="ops"><svg class="icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg><span data-i18n="nav.ops">Журнал агентов</span></a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Admin</div>
+      <ul class="nav-list">
+        <li><a href="/pages/admin.html" class="nav-link" data-nav-key="admin"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle></svg><span data-i18n="admin.title">Администрирование</span></a></li>
+      </ul>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div>
+      <div class="page-title" data-i18n="reports.title">Отчёты</div>
+    </div>
+
+    <!-- Selectors shared by both actions -->
+    <div class="corp-card">
+      <div class="corp-card-body">
+        <div class="form-grid">
+          <div class="form-field">
+            <label data-i18n="reports.scope_label">Уровень</label>
+            <select id="scopeSelect">
+              <option value="oblast" data-i18n="reports.scope_oblast">Область</option>
+              <option value="district" selected data-i18n="reports.scope_district">Район</option>
+            </select>
+          </div>
+          <div class="form-field" style="grid-column: span 2;">
+            <label data-i18n="reports.subject_label">Объект</label>
+            <select id="subjectSelect"><option value="">…</option></select>
+          </div>
+          <div class="form-field">
+            <label data-i18n="reports.lang_label">Язык отчёта</label>
+            <select id="langSelect">
+              <option value="ru">Русский</option>
+              <option value="ky">Кыргызча</option>
+              <option value="en">English</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label data-i18n="reports.decade_label">Декада (дата начала)</label>
+            <input type="date" id="decadeInput">
+            <div class="hint" data-i18n="reports.decade_hint">Декада — 10-дневный период...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Explanation -->
+    <div class="corp-card">
+      <div class="corp-card-header">
+        <div class="card-title-group"><span class="card-title" data-i18n="reports.explain_title">AI-объяснение показателей</span></div>
+        <div class="card-controls">
+          <button class="btn-secondary" id="explainBtn" data-i18n="reports.explain_btn">Получить объяснение</button>
+        </div>
+      </div>
+      <div class="corp-card-body">
+        <div class="error-box" id="explainError"></div>
+        <div id="explanationResult" style="display:none;">
+          <div class="explanation-box" id="explanationText"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Generate report -->
+    <div class="corp-card">
+      <div class="corp-card-header">
+        <div class="card-title-group"><span class="card-title" data-i18n="reports.generate_title">Генерация PDF-отчёта</span></div>
+        <div class="card-controls">
+          <button class="btn-primary" id="generateBtn" data-i18n="reports.generate_btn">Сформировать PDF-отчёт</button>
+        </div>
+      </div>
+      <div class="corp-card-body">
+        <div class="auth-gate" id="reportAuthGate" style="display:none;">
+          <span data-i18n="common.sign_in_required_body">Эта функция доступна только зарегистрированным клиентам.</span>
+          <a class="btn-primary" style="text-decoration:none;" href="/pages/login.html" data-i18n="common.sign_in_link">Перейти на страницу входа</a>
+        </div>
+        <div class="error-box" id="generateError"></div>
+        <div id="generateResult" style="display:none;">
+          <div class="result-row"><span data-i18n="reports.report_id_label">ID отчёта</span><span class="mono" id="resultReportId"></span></div>
+          <div class="result-row"><span data-i18n="reports.storage_path_label">Путь к файлу</span><span class="mono" id="resultStoragePath"></span></div>
+          <div class="note-box" style="margin-top:0.75rem;" data-i18n="reports.no_download_note">...</div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div id="toast" class="toast">
+  <svg class="icon" viewBox="0 0 24 24" style="color: var(--accent-gold);"><polyline points="20 6 9 17 4 12"></polyline></svg>
+  <span id="toastMsg"></span>
+</div>
+
+<script src="/assets/i18n.js"></script>
+<script src="/assets/api.js"></script>
+<script src="/assets/firebase-config.js"></script>
+<script src="/assets/auth.js"></script>
+<script src="/assets/page-common.js"></script>
+<script>
+(function () {
+  const P = window.GeoIntelPage;
+  P.initTheme();
+  P.initLangSwitch();
+  P.markActiveNav("reports");
+  document.getElementById("langSelect").value = window.GeoIntelI18n.currentLang();
+
+  let oblasts = [];
+
+  function defaultDecade() {
+    const now = new Date();
+    const day = now.getDate();
+    const snapped = day < 11 ? 1 : day < 21 ? 11 : 21;
+    now.setDate(snapped);
+    return now.toISOString().slice(0, 10);
+  }
+  document.getElementById("decadeInput").value = defaultDecade();
+
+  function snapDecade(dateStr) {
+    if (!dateStr) return dateStr;
+    const d = new Date(dateStr + "T00:00:00");
+    const day = d.getDate();
+    const snapped = day < 11 ? 1 : day < 21 ? 11 : 21;
+    d.setDate(snapped);
+    return d.toISOString().slice(0, 10);
+  }
+
+  function populateSubjects() {
+    const scope = document.getElementById("scopeSelect").value;
+    const select = document.getElementById("subjectSelect");
+    select.innerHTML = "";
+    if (scope === "oblast") {
+      oblasts.forEach((o) => {
+        const opt = document.createElement("option");
+        opt.value = o.id;
+        opt.textContent = o.name_ru;
+        select.appendChild(opt);
+      });
+    } else {
+      oblasts.forEach((o) => {
+        (o.districts || []).forEach((d) => {
+          const opt = document.createElement("option");
+          opt.value = d.id;
+          opt.textContent = `${d.name_ru} (${o.name_ru})`;
+          select.appendChild(opt);
+        });
+      });
+    }
+  }
+
+  async function loadUnits() {
+    try {
+      oblasts = await window.GeoIntelAPI.getUnits();
+      populateSubjects();
+    } catch (err) {
+      P.showToast(err.message || window.GeoIntelI18n.t("common.error_generic"), true);
+    }
+  }
+
+  document.getElementById("scopeSelect").addEventListener("change", populateSubjects);
+
+  function buildPayload() {
+    const scope = document.getElementById("scopeSelect").value;
+    const subjectId = Number(document.getElementById("subjectSelect").value);
+    const decade = snapDecade(document.getElementById("decadeInput").value);
+    const lang = document.getElementById("langSelect").value;
+    return { scope, subject_id: subjectId, decade, lang };
+  }
+
+  async function onExplain() {
+    const errorBox = document.getElementById("explainError");
+    errorBox.style.display = "none";
+    document.getElementById("explanationResult").style.display = "none";
+    const payload = buildPayload();
+    if (!payload.subject_id) return;
+    const btn = document.getElementById("explainBtn");
+    btn.disabled = true;
+    try {
+      const result = await window.GeoIntelAPI.explain(payload);
+      document.getElementById("explanationText").textContent = result.explanation;
+      document.getElementById("explanationResult").style.display = "block";
+    } catch (err) {
+      errorBox.textContent = err.status === 404
+        ? window.GeoIntelI18n.t("reports.no_metrics_error")
+        : (err.message || window.GeoIntelI18n.t("common.error_generic"));
+      errorBox.style.display = "block";
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  async function onGenerate() {
+    if (!P.requireAuthOrPrompt()) {
+      document.getElementById("reportAuthGate").style.display = "flex";
+      return;
+    }
+    document.getElementById("reportAuthGate").style.display = "none";
+    const errorBox = document.getElementById("generateError");
+    errorBox.style.display = "none";
+    document.getElementById("generateResult").style.display = "none";
+    const payload = buildPayload();
+    if (!payload.subject_id) return;
+    const btn = document.getElementById("generateBtn");
+    btn.disabled = true;
+    try {
+      const result = await window.GeoIntelAPI.generateReport(payload);
+      document.getElementById("resultReportId").textContent = result.report_id;
+      document.getElementById("resultStoragePath").textContent = result.storage_path;
+      document.getElementById("generateResult").style.display = "block";
+    } catch (err) {
+      errorBox.textContent = err.status === 404
+        ? window.GeoIntelI18n.t("reports.no_metrics_error")
+        : (err.message || window.GeoIntelI18n.t("common.error_generic"));
+      errorBox.style.display = "block";
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  document.getElementById("explainBtn").addEventListener("click", onExplain);
+  document.getElementById("generateBtn").addEventListener("click", onGenerate);
+
+  P.initAuthUI((user) => {
+    document.getElementById("reportAuthGate").style.display = user ? "none" : "flex";
+  });
+  loadUnits();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GeoIntel | Alerts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600&family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/style.css">
+<style>
+  body { font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: var(--bg-page); color: var(--text-primary); min-height: 100vh; line-height: 1.5; display:flex; flex-direction:column; }
+  .icon { display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; flex-shrink:0; stroke-width:2; stroke:currentColor; fill:none; stroke-linecap:round; stroke-linejoin:round; }
+  .icon-sm { width:14px; height:14px; }
+  .mono { font-family:'Roboto Mono', monospace; }
+  .header-top { background-color: var(--bg-header); color: var(--header-text); height:60px; padding:0 1.5rem; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--header-border); position:sticky; top:0; z-index:1000; box-shadow:0 2px 4px rgba(0,0,0,0.15); }
+  .header-left, .header-right { display:flex; align-items:center; gap:1rem; }
+  .brand-container { display:flex; align-items:center; gap:0.75rem; text-decoration:none; color:#fff; }
+  .brand-logo-icon { width:32px; height:32px; background:linear-gradient(135deg,#1565c0,#0d47a1); border:1px solid var(--accent-gold); border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; color:var(--accent-gold); }
+  .brand-title-wrap { display:flex; flex-direction:column; }
+  .brand-name { font-size:1.1rem; font-weight:700; letter-spacing:0.5px; }
+  .brand-name .intel { color:#90caf9; font-weight:400; }
+  .brand-tag { font-size:0.65rem; text-transform:uppercase; letter-spacing:1px; color:var(--accent-gold); font-weight:600; }
+  .header-btn { background: rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#fff; padding:6px 12px; font-size:0.78rem; font-weight:500; border-radius:var(--radius-sm); cursor:pointer; display:inline-flex; align-items:center; gap:0.4rem; text-decoration:none; }
+  .header-btn:hover { background: rgba(255,255,255,0.18); }
+  .header-btn-gold { background:var(--accent-gold); color:#1a237e; border-color:var(--accent-gold-dark); font-weight:600; }
+  .theme-toggle-btn { background: rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); color:#fff; width:34px; height:34px; border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; cursor:pointer; }
+  .lang-switch { display:flex; gap:2px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.15); border-radius:var(--radius-sm); padding:2px; }
+  .lang-switch button { background:transparent; border:none; color:#c5cae9; font-size:0.7rem; font-weight:700; padding:4px 7px; border-radius:3px; cursor:pointer; text-transform:uppercase; }
+  .lang-switch button.active { background:var(--accent-gold); color:#1a237e; }
+  .app-body { display:flex; flex:1; position:relative; }
+  .sidebar { width:230px; background-color:var(--bg-sidebar); border-right:1px solid var(--sidebar-border); display:flex; flex-direction:column; flex-shrink:0; }
+  .sidebar-section { padding:1rem 0.75rem 0.5rem 0.75rem; }
+  .sidebar-heading { font-size:0.68rem; text-transform:uppercase; letter-spacing:1px; color:var(--sidebar-text-muted); font-weight:700; padding:0 0.6rem 0.5rem 0.6rem; }
+  .nav-list { list-style:none; display:flex; flex-direction:column; gap:2px; }
+  .nav-link { display:flex; align-items:center; gap:0.65rem; padding:0.55rem 0.75rem; color:var(--sidebar-text); text-decoration:none; font-size:0.84rem; font-weight:500; border-radius:var(--radius-sm); border-left:3px solid transparent; }
+  .nav-link:hover { background-color:var(--sidebar-hover); color:var(--primary); }
+  .nav-link.active { background-color:var(--sidebar-active-bg); color:var(--sidebar-active-text); border-left-color:var(--primary); font-weight:600; }
+  .main-content { flex:1; padding:1.25rem 1.5rem 2.5rem 1.5rem; overflow-x:hidden; display:flex; flex-direction:column; gap:1.25rem; max-width:1100px; margin:0 auto; width:100%; }
+  .page-title { font-size:1.3rem; font-weight:700; color:var(--text-primary); margin-bottom:0.15rem; }
+  .page-subtitle { color:var(--text-muted); font-size:0.85rem; }
+  .filter-bar { display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap; }
+  .filter-bar select { background:var(--bg-surface); border:1px solid var(--card-border); border-radius:var(--radius-sm); padding:0.4rem 0.6rem; font-size:0.8rem; color:var(--text-primary); font-family:inherit; }
+  .alerts-list { display:flex; flex-direction:column; gap:0.6rem; }
+  .alert-row { align-items:center; }
+  .alert-row .alert-actions { display:flex; align-items:center; gap:0.5rem; flex-shrink:0; }
+  .dismiss-btn { background:transparent; border:1px solid var(--card-border); color:var(--text-secondary); padding:4px 10px; font-size:0.72rem; border-radius:var(--radius-sm); cursor:pointer; font-family:inherit; }
+  .dismiss-btn:hover { background:var(--table-header-bg); color:var(--primary); }
+  .dismiss-btn:disabled { opacity:0.5; cursor:not-allowed; }
+  .state-dismissed-badge { font-size:0.68rem; color:var(--text-muted); font-weight:600; text-transform:uppercase; }
+  .empty-state { text-align:center; padding:2.5rem; color:var(--text-muted); }
+  .toast { position:fixed; bottom:20px; right:20px; background:var(--bg-header); color:#fff; padding:10px 16px; border-radius:var(--radius-sm); box-shadow:0 4px 12px rgba(0,0,0,0.25); border-left:4px solid var(--accent-gold); font-size:0.8rem; display:flex; align-items:center; gap:8px; z-index:9999; transform:translateY(100px); opacity:0; transition:all 0.3s cubic-bezier(0.4,0,0.2,1); }
+  .toast.show { transform:translateY(0); opacity:1; }
+  @media (max-width: 900px) { .sidebar { display:none; } }
+</style>
+</head>
+<body>
+
+<header class="header-top">
+  <div class="header-left">
+    <a href="/" class="brand-container">
+      <div class="brand-logo-icon"><svg class="icon" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline></svg></div>
+      <div class="brand-title-wrap">
+        <div class="brand-name">Geo<span class="intel">Intel</span></div>
+        <div class="brand-tag" data-i18n="brand.tag">Мониторинг засухи</div>
+      </div>
+    </a>
+  </div>
+  <div class="header-right">
+    <div class="lang-switch">
+      <button data-lang-btn="ru">RU</button>
+      <button data-lang-btn="ky">KY</button>
+      <button data-lang-btn="en">EN</button>
+    </div>
+    <button class="theme-toggle-btn" id="themeToggle" title="Toggle theme" aria-label="Toggle theme">
+      <svg class="icon" id="themeSun" viewBox="0 0 24 24" style="display:none;"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      <svg class="icon" id="themeMoon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+    </button>
+    <div id="authBox"></div>
+  </div>
+</header>
+
+<div class="app-body">
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-heading">GeoIntel</div>
+      <ul class="nav-list">
+        <li><a href="/" class="nav-link" data-nav-key="dashboard"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg><span data-i18n="nav.dashboard">Панель управления</span></a></li>
+        <li><a href="/pages/fields.html" class="nav-link" data-nav-key="fields"><svg class="icon" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline></svg><span data-i18n="nav.fields">Мои участки</span></a></li>
+        <li><a href="/pages/alerts.html" class="nav-link" data-nav-key="alerts"><svg class="icon" viewBox="0 0 24 24"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"></polygon><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg><span data-i18n="nav.alerts">Оповещения</span></a></li>
+        <li><a href="/pages/reports.html" class="nav-link" data-nav-key="reports"><svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg><span data-i18n="nav.reports">Отчёты</span></a></li>
+        <li><a href="/pages/billing.html" class="nav-link" data-nav-key="billing"><svg class="icon" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg><span data-i18n="nav.billing">Оплата</span></a></li>
+        <li><a href="/pages/ops.html" class="nav-link" data-nav-key="ops"><svg class="icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg><span data-i18n="nav.ops">Журнал агентов</span></a></li>
+      </ul>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Admin</div>
+      <ul class="nav-list">
+        <li><a href="/pages/admin.html" class="nav-link" data-nav-key="admin"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle></svg><span data-i18n="admin.title">Администрирование</span></a></li>
+      </ul>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div>
+      <div class="page-title" data-i18n="alerts.title">Оповещения</div>
+    </div>
+
+    <div class="filter-bar">
+      <label class="mono" style="font-size:0.75rem; color:var(--text-muted);" data-i18n="alerts.filter_severity">Уровень</label>
+      <select id="severityFilter"><option value="all" data-i18n="alerts.all">Все</option></select>
+      <label class="mono" style="font-size:0.75rem; color:var(--text-muted);" data-i18n="alerts.filter_state">Статус</label>
+      <select id="stateFilter">
+        <option value="all" data-i18n="alerts.all">Все</option>
+        <option value="active" data-i18n="alerts.state_active">Активные</option>
+        <option value="dismissed" data-i18n="alerts.state_dismissed">Скрытые</option>
+      </select>
+    </div>
+
+    <div id="alertsContainer">
+      <div class="empty-state" data-i18n="common.loading">Загрузка...</div>
+    </div>
+  </main>
+</div>
+
+<div id="toast" class="toast">
+  <svg class="icon" viewBox="0 0 24 24" style="color: var(--accent-gold);"><polyline points="20 6 9 17 4 12"></polyline></svg>
+  <span id="toastMsg"></span>
+</div>
+
+<script src="/assets/i18n.js"></script>
+<script src="/assets/api.js"></script>
+<script src="/assets/firebase-config.js"></script>
+<script src="/assets/auth.js"></script>
+<script src="/assets/page-common.js"></script>
+<script>
+(function () {
+  const P = window.GeoIntelPage;
+  P.initTheme();
+  P.initLangSwitch();
+  P.markActiveNav("alerts");
+
+  let allAlerts = [];
+
+  function severityIcon(sev) {
+    if (sev === "danger") return '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line>';
+    if (sev === "warning") return '<polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"></polygon>';
+    return '<circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line>';
+  }
+
+  function render() {
+    const sevFilter = document.getElementById("severityFilter").value;
+    const stateFilter = document.getElementById("stateFilter").value;
+    const filtered = allAlerts.filter((a) => {
+      if (sevFilter !== "all" && (a.severity || "").toLowerCase() !== sevFilter) return false;
+      if (stateFilter !== "all" && (a.state || "").toLowerCase() !== stateFilter) return false;
+      return true;
+    });
+
+    const container = document.getElementById("alertsContainer");
+    if (filtered.length === 0) {
+      container.innerHTML = `<div class="empty-state" data-i18n="empty.no_alerts">Активных оповещений нет</div>`;
+      window.GeoIntelI18n.applyTranslations();
+      return;
+    }
+
+    container.innerHTML = `<div class="alerts-list">${filtered.map(rowHtml).join("")}</div>`;
+    container.querySelectorAll("[data-dismiss-id]").forEach((btn) => {
+      btn.addEventListener("click", () => onDismiss(Number(btn.dataset.dismissId)));
+    });
+  }
+
+  function rowHtml(a) {
+    const cls = P.severityClass(a.severity);
+    const subject = a.field_id ? `field #${a.field_id}` : a.unit_id ? `unit #${a.unit_id}` : "—";
+    const isActive = (a.state || "").toLowerCase() === "active";
+    return `
+      <div class="alert-row ${cls}">
+        <div class="alert-icon-col"><svg class="icon icon-sm" viewBox="0 0 24 24">${severityIcon(cls)}</svg></div>
+        <div class="alert-body">
+          <div class="alert-title-row">
+            <span class="alert-title">${P.escapeHtml(a.metric_id)} — ${P.escapeHtml(subject)}</span>
+            <span class="alert-time mono">${P.formatDateTime(a.created_at)}</span>
+          </div>
+          <div class="alert-desc">
+            <span data-i18n="alerts.col_decade">Декада</span>: <span class="mono">${P.escapeHtml(a.decade_start)}</span>
+            &nbsp;·&nbsp; ${P.escapeHtml(a.severity)} / ${P.escapeHtml(a.state)}
+          </div>
+        </div>
+        <div class="alert-actions">
+          ${isActive
+            ? `<button class="dismiss-btn" data-dismiss-id="${a.id}" data-i18n="action.dismiss">Скрыть</button>`
+            : `<span class="state-dismissed-badge" data-i18n="alerts.state_dismissed">Скрыто</span>`}
+        </div>
+      </div>
+    `;
+  }
+
+  async function onDismiss(alertId) {
+    if (!P.requireAuthOrPrompt()) return;
+    try {
+      await window.GeoIntelAPI.dismissAlert(alertId);
+      const a = allAlerts.find((x) => x.id === alertId);
+      if (a) a.state = "dismissed";
+      P.showToast(window.GeoIntelI18n.t("alerts.dismiss_success"));
+      render();
+    } catch (err) {
+      P.showToast(err.message || window.GeoIntelI18n.t("alerts.dismiss_error"), true);
+    }
+  }
+
+  function populateSeverityFilter() {
+    const select = document.getElementById("severityFilter");
+    const distinct = [...new Set(allAlerts.map((a) => (a.severity || "").toLowerCase()).filter(Boolean))];
+    distinct.forEach((sev) => {
+      const opt = document.createElement("option");
+      opt.value = sev;
+      opt.textContent = sev;
+      select.appendChild(opt);
+    });
+  }
+
+  async function load() {
+    try {
+      allAlerts = await window.GeoIntelAPI.getAlerts();
+      populateSeverityFilter();
+      render();
+    } catch (err) {
+      document.getElementById("alertsContainer").innerHTML =
+        `<div class="empty-state">${P.escapeHtml(err.message || window.GeoIntelI18n.t("common.error_generic"))}</div>`;
+    }
+  }
+
+  document.getElementById("severityFilter").addEventListener("change", render);
+  document.getElementById("stateFilter").addEventListener("change", render);
+
+  P.initAuthUI();
+  load();
+})();
+</script>
+</body>
+</html>

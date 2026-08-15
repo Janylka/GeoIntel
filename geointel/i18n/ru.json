@@ -4,7 +4,15 @@
     "errors.not_found": "Объект не найден.",
     "alerts.threshold_breached": "Показатель {metric} перешел порог.",
     "email.welcome.subject": "Добро пожаловать в GeoIntel",
+    "email.welcome.body": "Здравствуйте, {name}! Регистрация в GeoIntel завершена. Ваш тариф: {plan}. Вы будете получать уведомления о состоянии ваших участков.",
     "email.invoice.subject": "Счет на оплату №{invoice_id}",
+    "email.invoice.body": "Здравствуйте, {name}! Сформирован счет №{invoice_id} на тариф «{plan}» на сумму {amount} сом. Статус: {status}.",
+    "email.payment_confirmed.subject": "Оплата подтверждена — счет №{invoice_id}",
+    "email.payment_confirmed.body": "Здравствуйте, {name}! Оплата по счету №{invoice_id} подтверждена. Тариф «{plan}» активирован.",
+    "email.threshold.subject": "Оповещение: {metric} — {severity}",
+    "email.threshold.body": "На участке «{subject_name}» показатель {metric} перешел порог ({severity}) за декаду {decade}. Проверьте состояние участка в личном кабинете GeoIntel.",
+    "email.decade_summary.subject": "Сводка GeoIntel за декаду {decade}",
+    "email.decade_summary.body": "Здравствуйте, {name}! Краткая сводка по вашим участкам за декаду {decade}: {items}",
     "report.title": "Отчет GeoIntel за декаду {decade}",
     "report.generated_at": "Сформирован {datetime}"
 }

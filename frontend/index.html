@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<!--
+  GeoIntel Dashboard — public/core frontend entry point.
+
+  SHARED LAYOUT CONVENTION (read this before building sibling pages, e.g.
+  frontend/pages/{fields,alerts,reports,billing,ops}.html):
+
+  There is no JS-injected layout. Each page duplicates the same header/sidebar
+  markup verbatim so it works standalone with no build step. To keep pages
+  consistent, follow this structure exactly:
+
+    <header class="header-top"> ... same brand/sync/theme/lang/user markup ...
+    <div class="app-body">
+      <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+      <aside class="sidebar" id="sidebar"> ... nav-list of <a class="nav-link"> ...
+      <main class="main-content"> ... page content ...
+
+  Sidebar nav links (use these exact hrefs and mark the current page's link
+  with class="nav-link active"):
+    /               -> Dashboard   (data-i18n="nav.dashboard")
+    /pages/fields.html   -> My Fields    (data-i18n="nav.fields")
+    /pages/alerts.html   -> Alerts       (data-i18n="nav.alerts")
+    /pages/reports.html  -> Reports      (data-i18n="nav.reports")
+    /pages/billing.html  -> Billing      (data-i18n="nav.billing")
+    /pages/ops.html      -> Agent Log    (data-i18n="nav.ops")
+    /pages/login.html    -> Sign In      (data-i18n="nav.login")
+
+  Shared assets to include, in this order, on every page:
+    <link rel="stylesheet" href="/assets/style.css">
+    <script src="/assets/firebase-config.js"></script>
+    <script src="/assets/auth.js"></script>
+    <script src="/assets/i18n.js"></script>
+    <script src="/assets/api.js"></script>
+  All script/link paths are absolute ("/assets/...") so pages under /pages/
+  resolve them the same way the root page does.
+
+  Theme: `data-theme` attribute on <html>, persisted to localStorage key
+  "geointel_theme" ('light' | 'dark'). Language: localStorage key
+  "geointel_lang" via window.GeoIntelI18n.setLang().
+
+  User menu behavior other pages should copy: show a "Sign In" header-btn
+  linking to /pages/login.html when geointelAuth.currentUser is null (or when
+  !geointelAuth.isConfigured), otherwise show the avatar+name button which
+  signs the user out on click. Auth-gated actions should call
+  geointelAuth.isConfigured / .currentUser before hitting API endpoints that
+  require `auth: true`, and show a toast using i18n keys "auth.required" /
+  "auth.not_configured" instead of letting the request fail silently.
+-->
+<html lang="ru" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeoIntel | Drought Monitoring — Kyrgyzstan</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500;600&family=Roboto:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <link rel="stylesheet" href="/assets/style.css">
+
+    <style>
+        /* Page-local, non-structural tweaks only — component styles live in style.css */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            text-align: center;
+            padding: 1.5rem 1rem;
+            flex: 1;
+        }
+        .empty-state .icon-lg { color: var(--text-disabled); }
+        .lang-switch {
+            display: flex;
+            gap: 2px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: var(--radius-sm);
+            padding: 2px;
+        }
+        .lang-btn {
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 4px 7px;
+            border-radius: 3px;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+        .lang-btn.active { background: rgba(255,255,255,0.22); }
+        .kpi-value.placeholder { color: var(--text-disabled); font-size: 1.1rem; }
+        .field-teaser-body { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; padding: 0.5rem 0.25rem; }
+        .field-teaser-body p { color: var(--text-secondary); font-size: 0.82rem; max-width: 640px; }
+        .banner-warn {
+            display: flex; align-items: center; gap: 0.5rem;
+            background: var(--status-warning-bg); color: var(--status-warning-text);
+            border: 1px solid var(--status-warning-border); border-radius: var(--radius-sm);
+            padding: 0.5rem 0.75rem; font-size: 0.78rem; margin-bottom: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Corporate Header -->
+    <header class="header-top">
+        <div class="header-left">
+            <button class="menu-toggle" id="menuToggle" aria-label="Toggle Navigation">
+                <svg class="icon" viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            </button>
+            <a href="/" class="brand-container">
+                <div class="brand-logo-icon">
+                    <svg class="icon" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+                </div>
+                <div class="brand-title-wrap">
+                    <div class="brand-name">Geo<span class="intel">Intel</span></div>
+                    <div class="brand-tag" data-i18n="brand.tag">Мониторинг засухи</div>
+                </div>
+            </a>
+        </div>
+
+        <div class="header-center">
+            <nav class="breadcrumbs-nav" aria-label="Breadcrumb">
+                <span class="crumb-current" data-i18n="nav.dashboard">Панель управления</span>
+            </nav>
+        </div>
+
+        <div class="header-right">
+            <div class="sync-badge" id="syncBadge">
+                <div class="pulse-dot" id="syncDot"></div>
+                <span id="syncText" data-i18n="sync.checking">Проверка соединения...</span>
+            </div>
+
+            <button class="header-btn" id="refreshBtn" title="Sync">
+                <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg>
+                <span data-i18n="action.sync">Синхронизировать</span>
+            </button>
+
+            <button class="header-btn header-btn-gold" id="exportPdfBtn" title="Export">
+                <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                <span data-i18n="action.export">Экспорт отчёта</span>
+            </button>
+
+            <div class="lang-switch" id="langSwitch">
+                <button class="lang-btn" data-lang="ru">ru</button>
+                <button class="lang-btn" data-lang="ky">ky</button>
+                <button class="lang-btn" data-lang="en">en</button>
+            </div>
+
+            <button class="theme-toggle-btn" id="themeToggle" title="Toggle Light/Dark Theme" aria-label="Toggle Theme">
+                <svg class="icon icon-sun" id="themeSun" viewBox="0 0 24 24" style="display:none;"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                <svg class="icon icon-moon" id="themeMoon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+            </button>
+
+            <div id="userArea"></div>
+        </div>
+    </header>
+
+    <!-- Sub-Header Filter Bar -->
+    <div class="sub-header-bar">
+        <div class="sub-bar-left">
+            <div class="zone-selector">
+                <svg class="icon icon-sm" viewBox="0 0 24 24"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon><line x1="8" y1="2" x2="8" y2="18"></line><line x1="16" y1="6" x2="16" y2="22"></line></svg>
+                <span data-i18n="filter.territory">Территория:</span>
+                <select class="custom-select" id="territorySelect">
+                    <option value="" data-i18n="filter.select_placeholder">— выберите район —</option>
+                </select>
+            </div>
+        </div>
+        <div class="sub-bar-right">
+            <button class="card-btn" id="filterResetBtn">
+                <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+                <span data-i18n="action.reset_filters">Сбросить фильтры</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Body Layout -->
+    <div class="app-body">
+        <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-heading" data-i18n="nav.dashboard">Панель управления</div>
+                <ul class="nav-list">
+                    <li>
+                        <a href="/" class="nav-link active">
+                            <div class="nav-link-content">
+                                <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                                <span data-i18n="nav.dashboard">Панель управления</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/pages/fields.html" class="nav-link">
+                            <div class="nav-link-content">
+                                <svg class="icon" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+                                <span data-i18n="nav.fields">Мои участки</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/pages/alerts.html" class="nav-link">
+                            <div class="nav-link-content">
+                                <svg class="icon" viewBox="0 0 24 24"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"></polygon><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                                <span data-i18n="nav.alerts">Оповещения</span>
+                            </div>
+                            <span class="nav-badge alert-badge" id="sidebarAlertBadge" style="display:none;"></span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/pages/reports.html" class="nav-link">
+                            <div class="nav-link-content">
+                                <svg class="icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                                <span data-i18n="nav.reports">Отчёты</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/pages/billing.html" class="nav-link">
+                            <div class="nav-link-content">
+                                <svg class="icon" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                                <span data-i18n="nav.billing">Оплата</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/pages/ops.html" class="nav-link">
+                            <div class="nav-link-content">
+                                <svg class="icon" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                                <span data-i18n="nav.ops">Журнал агентов</span>
+                            </div>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="sidebar-footer">
+                <div class="system-status-box">
+                    <div class="status-header">
+                        <span data-i18n="status.api">GeoIntel API</span>
+                        <div class="pulse-dot" id="statusDot"></div>
+                    </div>
+                    <div class="status-row">
+                        <span data-i18n="status.units">Административных единиц</span>
+                        <span class="status-val mono" id="statusUnits">—</span>
+                    </div>
+                    <div class="status-row">
+                        <span data-i18n="kpi.alerts_active">Активные оповещения</span>
+                        <span class="status-val mono" id="statusAlerts">—</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Dashboard Workspace -->
+        <main class="main-content">
+
+            <!-- KPI Ribbon -->
+            <section class="kpi-grid" aria-label="Key Performance Indicators">
+                <div class="kpi-card accent-blue">
+                    <div class="kpi-header">
+                        <span class="kpi-label" data-i18n="kpi.districts_total">Районов в системе</span>
+                        <div class="kpi-icon-wrap">
+                            <svg class="icon icon-sm" viewBox="0 0 24 24"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon></svg>
+                        </div>
+                    </div>
+                    <div class="kpi-value-row">
+                        <span class="kpi-value mono" id="kpiDistricts">—</span>
+                    </div>
+                    <div class="kpi-footer"><span class="delta-neutral" id="kpiOblastsFooter">&nbsp;</span></div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <span class="kpi-label" data-i18n="kpi.alerts_active">Активные оповещения</span>
+                        <div class="kpi-icon-wrap" style="color: var(--accent-gold-dark);">
+                            <svg class="icon icon-sm" viewBox="0 0 24 24"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"></polygon></svg>
+                        </div>
+                    </div>
+                    <div class="kpi-value-row">
+                        <span class="kpi-value mono" id="kpiAlerts">—</span>
+                    </div>
+                    <div class="kpi-footer"><span class="delta-neutral" id="kpiAlertsFooter">&nbsp;</span></div>
+                </div>
+
+                <div class="kpi-card accent-green">
+                    <div class="kpi-header">
+                        <span class="kpi-label" data-i18n="kpi.vhi">Индекс здоровья растительности (VHI)</span>
+                        <div class="kpi-icon-wrap" style="color: #2e7d32;">
+                            <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                        </div>
+                    </div>
+                    <div class="kpi-value-row">
+                        <span class="kpi-value placeholder" id="kpiVhi" data-i18n="kpi.no_selection">Выберите район</span>
+                    </div>
+                    <div class="kpi-footer"><span class="delta-neutral" id="kpiVhiFooter">&nbsp;</span></div>
+                </div>
+
+                <div class="kpi-card accent-blue">
+                    <div class="kpi-header">
+                        <span class="kpi-label" data-i18n="kpi.soil_moisture">Влажность почвы</span>
+                        <div class="kpi-icon-wrap" style="color: var(--secondary);">
+                            <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>
+                        </div>
+                    </div>
+                    <div class="kpi-value-row">
+                        <span class="kpi-value placeholder" id="kpiSoil" data-i18n="kpi.no_selection">Выберите район</span>
+                    </div>
+                    <div class="kpi-footer"><span class="delta-neutral" id="kpiSoilFooter">&nbsp;</span></div>
+                </div>
+
+                <div class="kpi-card accent-gold">
+                    <div class="kpi-header">
+                        <span class="kpi-label" data-i18n="kpi.yield_forecast">Прогноз урожайности</span>
+                        <div class="kpi-icon-wrap" style="color: var(--accent-gold-dark);">
+                            <svg class="icon icon-sm" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                        </div>
+                    </div>
+                    <div class="kpi-value-row">
+                        <span class="kpi-value placeholder" id="kpiYield" data-i18n="kpi.no_selection">Выберите район</span>
+                    </div>
+                    <div class="kpi-footer"><span class="delta-neutral" id="kpiYieldFooter">&nbsp;</span></div>
+                </div>
+            </section>
+
+            <!-- Row 1: Map + VHI chart / Alerts -->
+            <div class="dashboard-grid-row">
+                <div class="corp-card col-map">
+                    <div class="corp-card-header">
+                        <div class="card-title-group">
+                            <svg class="icon" viewBox="0 0 24 24"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"></polygon></svg>
+                            <span class="card-title" data-i18n="map.title">Карта районов и индекс VHI</span>
+                            <span class="card-subtitle-badge">Kyrgyzstan [41.20°N, 74.77°E]</span>
+                        </div>
+                        <div class="card-controls">
+                            <button class="card-btn" id="fitBoundsBtn" title="Fit all districts">
+                                <svg class="icon icon-sm" viewBox="0 0 24 24"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
+                                <span>Fit</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="map-wrapper">
+                        <div id="leaflet-map"></div>
+                        <div class="map-overlay-tools">
+                            <button class="map-tool-btn" id="mapZoomIn" title="Zoom In">
+                                <svg class="icon icon-sm" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            </button>
+                            <button class="map-tool-btn" id="mapZoomOut" title="Zoom Out">
+                                <svg class="icon icon-sm" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            </button>
+                        </div>
+                        <div class="map-legend">
+                            <div class="legend-title" data-i18n="map.legend">Легенда VHI</div>
+                            <div class="legend-item"><div class="legend-swatch" style="background:#2e7d32;"></div><span data-i18n="map.favorable">Благоприятно</span> (&gt;60)</div>
+                            <div class="legend-item"><div class="legend-swatch" style="background:#8bc34a;"></div><span data-i18n="map.normal">Норма</span> (45-60)</div>
+                            <div class="legend-item"><div class="legend-swatch" style="background:#ffc107;"></div><span data-i18n="map.moderate">Умеренная засуха</span> (40-45)</div>
+                            <div class="legend-item"><div class="legend-swatch" style="background:#e53935;"></div><span data-i18n="map.severe">Сильная засуха</span> (30-40)</div>
+                            <div class="legend-item"><div class="legend-swatch" style="background:#b71c1c;"></div><span data-i18n="map.extreme">Экстремальная засуха</span> (&lt;30)</div>
+                            <div class="legend-item"><div class="legend-swatch" style="background:#90a4ae;"></div><span data-i18n="empty.no_data">Нет данных</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-side-widgets">
+                    <div class="corp-card card-crop-health">
+                        <div class="corp-card-header">
+                            <div class="card-title-group">
+                                <svg class="icon" viewBox="0 0 24 24" style="color: #2e7d32;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                                <span class="card-title" data-i18n="chart.vhi_title">Динамика VHI</span>
+                            </div>
+                            <div class="card-controls"><span class="card-subtitle-badge" id="vhiChartUnitLabel">—</span></div>
+                        </div>
+                        <div class="corp-card-body">
+                            <div class="chart-box" id="vhiChartBox">
+                                <canvas id="vhiTrendChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="corp-card card-alerts-section">
+                        <div class="corp-card-header">
+                            <div class="card-title-group">
+                                <svg class="icon" viewBox="0 0 24 24" style="color: var(--accent-gold-dark);"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"></polygon><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                                <span class="card-title" data-i18n="alerts.title">Оповещения</span>
+                            </div>
+                            <span class="nav-badge alert-badge" id="alertsCountBadge">0</span>
+                        </div>
+                        <div class="corp-card-body" style="padding: 0.75rem;">
+                            <div class="alerts-container" id="alertsContainer">
+                                <div class="empty-state" data-i18n="empty.no_alerts">Активных оповещений нет</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 2: Soil moisture + Yield forecast -->
+            <div class="dashboard-grid-row">
+                <div class="corp-card col-half">
+                    <div class="corp-card-header">
+                        <div class="card-title-group">
+                            <svg class="icon" viewBox="0 0 24 24" style="color: var(--secondary);"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>
+                            <span class="card-title" data-i18n="chart.soil_title">Влажность почвы</span>
+                        </div>
+                        <div class="card-controls"><span class="card-subtitle-badge">SMAP L4</span></div>
+                    </div>
+                    <div class="corp-card-body">
+                        <div class="chart-box" id="soilChartBox">
+                            <canvas id="soilMoistureChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="corp-card col-half">
+                    <div class="corp-card-header">
+                        <div class="card-title-group">
+                            <svg class="icon" viewBox="0 0 24 24" style="color: var(--accent-gold-dark);"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                            <span class="card-title" data-i18n="chart.yield_title">Прогноз урожайности пшеницы</span>
+                        </div>
+                        <div class="card-controls"><span class="card-subtitle-badge">ML Regression</span></div>
+                    </div>
+                    <div class="corp-card-body">
+                        <div class="chart-box" id="yieldChartBox">
+                            <canvas id="yieldForecastChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 3: My Fields teaser -->
+            <div class="dashboard-grid-row">
+                <div class="corp-card col-full">
+                    <div class="corp-card-header">
+                        <div class="card-title-group">
+                            <svg class="icon" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+                            <span class="card-title" data-i18n="fields.teaser_title">Мои участки</span>
+                        </div>
+                    </div>
+                    <div class="corp-card-body">
+                        <div class="field-teaser-body">
+                            <p data-i18n="fields.teaser_body">Зарегистрируйте свои участки, чтобы получать точечный мониторинг NDVI и оповещения.</p>
+                            <a href="/pages/fields.html" class="header-btn header-btn-gold" style="text-decoration:none;">
+                                <span data-i18n="fields.teaser_cta">Перейти к участкам</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <div id="toast" class="toast">
+        <svg class="icon" viewBox="0 0 24 24" style="color: var(--accent-gold);"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        <span id="toastMsg">—</span>
+    </div>
+
+    <!-- Shared assets, in this order -->
+    <script src="/assets/firebase-config.js"></script>
+    <script src="/assets/auth.js"></script>
+    <script src="/assets/i18n.js"></script>
+    <script src="/assets/api.js"></script>
+
+    <script>
+        // ---- State ----
+        let map, districtLayer;
+        let vhiChart, soilChart, yieldChart;
+        let unitsData = [];           // raw getUnits() response (oblasts w/ nested districts)
+        let districtOptions = [];     // flattened {id, name_ru, name_ky, name_en, oblastName}
+        let currentUnitId = null;
+        let alertsData = [];
+
+        const VHI_THRESHOLDS = [
+            { max: 30, color: '#b71c1c' },   // extreme
+            { max: 40, color: '#e53935' },   // severe
+            { max: 45, color: '#ffc107' },   // moderate
+            { max: 60, color: '#8bc34a' },   // normal
+            { max: Infinity, color: '#2e7d32' }, // favorable
+        ];
+        const NEUTRAL_COLOR = '#90a4ae';
+
+        function vhiColor(v) {
+            if (v === null || v === undefined || Number.isNaN(v)) return NEUTRAL_COLOR;
+            for (const t of VHI_THRESHOLDS) if (v < t.max) return t.color;
+            return VHI_THRESHOLDS[VHI_THRESHOLDS.length - 1].color;
+        }
+
+        function unitName(unit) {
+            const lang = window.GeoIntelI18n.currentLang();
+            return unit[`name_${lang}`] || unit.name_ru || unit.name_en || String(unit.id);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            initLangSwitch();
+            initUserArea();
+            initLeafletMap();
+            initCharts();
+            initEventHandlers();
+            loadInitialData();
+        });
+
+        // ---- Theme ----
+        function initTheme() {
+            const saved = window.localStorage.getItem('geointel_theme') || 'light';
+            setTheme(saved, false);
+        }
+        function setTheme(theme, toast) {
+            document.documentElement.setAttribute('data-theme', theme);
+            window.localStorage.setItem('geointel_theme', theme);
+            const isDark = theme === 'dark';
+            document.getElementById('themeSun').style.display = isDark ? 'block' : 'none';
+            document.getElementById('themeMoon').style.display = isDark ? 'none' : 'block';
+            if (vhiChart) updateChartsTheme();
+            if (toast) showToast(window.GeoIntelI18n.t(isDark ? 'toast.theme_dark' : 'toast.theme_light'));
+        }
+        function toggleTheme() {
+            const cur = document.documentElement.getAttribute('data-theme') || 'light';
+            setTheme(cur === 'dark' ? 'light' : 'dark', true);
+        }
+
+        // ---- Language ----
+        function initLangSwitch() {
+            const lang = window.GeoIntelI18n.currentLang();
+            document.querySelectorAll('.lang-btn').forEach((btn) => {
+                btn.classList.toggle('active', btn.dataset.lang === lang);
+                btn.addEventListener('click', () => {
+                    window.GeoIntelI18n.setLang(btn.dataset.lang);
+                    document.querySelectorAll('.lang-btn').forEach((b) => b.classList.toggle('active', b === btn));
+                    renderTerritorySelect();
+                    renderAlerts();
+                });
+            });
+        }
+
+        // ---- User area (auth) ----
+        function initUserArea() {
+            renderUserArea(window.geointelAuth.currentUser);
+            window.geointelAuth.onAuthChange((user) => renderUserArea(user));
+        }
+        function renderUserArea(user) {
+            const el = document.getElementById('userArea');
+            if (user) {
+                const label = user.displayName || user.email || 'User';
+                const initials = label.slice(0, 2).toUpperCase();
+                el.innerHTML = `
+                    <button class="user-profile-btn" id="signOutBtn" title="${label}">
+                        <div class="user-avatar">${initials}</div>
+                        <div class="user-meta">
+                            <span class="user-name">${label}</span>
+                            <span class="user-org" data-i18n="nav.logout">Выйти</span>
+                        </div>
+                    </button>`;
+                document.getElementById('signOutBtn').addEventListener('click', async () => {
+                    await window.geointelAuth.signOutUser();
+                });
+            } else {
+                el.innerHTML = `
+                    <a class="header-btn" href="/pages/login.html">
+                        <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+                        <span data-i18n="nav.login">Войти</span>
+                    </a>`;
+            }
+            window.GeoIntelI18n.applyTranslations();
+        }
+
+        // ---- Data loading ----
+        async function loadInitialData() {
+            checkHealth();
+            await Promise.all([loadUnits(), loadAlerts(), loadMapData()]);
+        }
+
+        async function checkHealth() {
+            const dot = document.getElementById('syncDot');
+            const text = document.getElementById('syncText');
+            const statusDot = document.getElementById('statusDot');
+            try {
+                const res = await window.GeoIntelAPI.health();
+                const ok = res.status === 'ok' && res.database === 'ok';
+                dot.style.background = ok ? '#4caf50' : '#e53935';
+                statusDot.style.background = ok ? '#4caf50' : '#e53935';
+                text.textContent = window.GeoIntelI18n.t(ok ? 'sync.ok' : 'status.degraded');
+                text.removeAttribute('data-i18n');
+            } catch (e) {
+                dot.style.background = '#e53935';
+                statusDot.style.background = '#e53935';
+                text.textContent = window.GeoIntelI18n.t('sync.error');
+                text.removeAttribute('data-i18n');
+            }
+        }
+
+        async function loadUnits() {
+            try {
+                unitsData = await window.GeoIntelAPI.getUnits();
+            } catch (e) {
+                unitsData = [];
+                showToast(e.message || 'Failed to load units');
+            }
+            let districtCount = 0;
+            districtOptions = [];
+            unitsData.forEach((oblast) => {
+                (oblast.districts || []).forEach((d) => {
+                    districtCount += 1;
+                    districtOptions.push({ ...d, oblastName: unitName(oblast) });
+                });
+            });
+            document.getElementById('kpiDistricts').textContent = districtCount;
+            document.getElementById('statusUnits').textContent = districtCount + unitsData.length;
+            document.getElementById('kpiOblastsFooter').textContent = `${unitsData.length} oblasts`;
+            renderTerritorySelect();
+        }
+
+        function renderTerritorySelect() {
+            const select = document.getElementById('territorySelect');
+            const prevValue = select.value;
+            select.innerHTML = '';
+            const placeholder = document.createElement('option');
+            placeholder.value = '';
+            placeholder.textContent = window.GeoIntelI18n.t('filter.select_placeholder');
+            select.appendChild(placeholder);
+            unitsData.forEach((oblast) => {
+                const group = document.createElement('optgroup');
+                group.label = unitName(oblast);
+                (oblast.districts || []).forEach((d) => {
+                    const opt = document.createElement('option');
+                    opt.value = d.id;
+                    opt.textContent = unitName(d);
+                    group.appendChild(opt);
+                });
+                select.appendChild(group);
+            });
+            if (prevValue) select.value = prevValue;
+        }
+
+        async function loadAlerts() {
+            try {
+                alertsData = await window.GeoIntelAPI.getAlerts();
+            } catch (e) {
+                alertsData = [];
+                showToast(e.message || 'Failed to load alerts');
+            }
+            renderAlerts();
+        }
+
+        function renderAlerts() {
+            const active = alertsData.filter((a) => a.state !== 'dismissed');
+            document.getElementById('kpiAlerts').textContent = active.length;
+            document.getElementById('statusAlerts').textContent = active.length;
+            const sidebarBadge = document.getElementById('sidebarAlertBadge');
+            if (active.length > 0) {
+                sidebarBadge.style.display = '';
+                sidebarBadge.textContent = active.length;
+            } else {
+                sidebarBadge.style.display = 'none';
+            }
+            document.getElementById('alertsCountBadge').textContent = active.length;
+
+            const container = document.getElementById('alertsContainer');
+            if (active.length === 0) {
+                container.innerHTML = `<div class="empty-state">${window.GeoIntelI18n.t('empty.no_alerts')}</div>`;
+                return;
+            }
+            container.innerHTML = '';
+            active
+                .slice()
+                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+                .forEach((alert) => {
+                    const sev = (alert.severity || '').toLowerCase();
+                    let rowClass = 'info';
+                    if (['critical', 'danger', 'severe', 'extreme'].includes(sev)) rowClass = 'danger';
+                    else if (['warning', 'moderate', 'high'].includes(sev)) rowClass = 'warning';
+
+                    const row = document.createElement('div');
+                    row.className = `alert-row ${rowClass}`;
+                    const when = alert.created_at ? new Date(alert.created_at).toLocaleString(window.GeoIntelI18n.currentLang()) : '';
+                    row.innerHTML = `
+                        <div class="alert-icon-col">
+                            <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                        </div>
+                        <div class="alert-body">
+                            <div class="alert-title-row">
+                                <span class="alert-title">${alert.metric_id || 'metric'} — unit #${alert.unit_id ?? '—'}</span>
+                                <span class="alert-time mono">${when}</span>
+                            </div>
+                            <div class="alert-desc">Decade ${alert.decade_start || ''} · severity: ${alert.severity || '—'}</div>
+                        </div>
+                        <button class="card-btn" data-alert-id="${alert.id}" title="${window.GeoIntelI18n.t('action.dismiss')}">
+                            <svg class="icon icon-sm" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        </button>`;
+                    row.querySelector('button').addEventListener('click', () => dismissAlert(alert.id));
+                    container.appendChild(row);
+                });
+        }
+
+        async function dismissAlert(alertId) {
+            if (!window.geointelAuth.isConfigured) {
+                showToast(window.GeoIntelI18n.t('auth.not_configured'));
+                return;
+            }
+            if (!window.geointelAuth.currentUser) {
+                showToast(window.GeoIntelI18n.t('auth.required'));
+                return;
+            }
+            try {
+                await window.GeoIntelAPI.dismissAlert(alertId);
+                showToast(window.GeoIntelI18n.t('alerts.dismiss_success'));
+                await loadAlerts();
+            } catch (e) {
+                showToast(window.GeoIntelI18n.t('alerts.dismiss_error'));
+            }
+        }
+
+        // ---- Map ----
+        function initLeafletMap() {
+            map = L.map('leaflet-map', {
+                center: [41.60, 74.60],
+                zoom: 7,
+                zoomControl: false,
+                attributionControl: true,
+            });
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Tiles &copy; Esri',
+                maxZoom: 18,
+            }).addTo(map);
+
+            document.getElementById('mapZoomIn').addEventListener('click', () => map.zoomIn());
+            document.getElementById('mapZoomOut').addEventListener('click', () => map.zoomOut());
+            document.getElementById('fitBoundsBtn').addEventListener('click', fitAllDistricts);
+        }
+
+        async function loadMapData() {
+            try {
+                const geojson = await window.GeoIntelAPI.getUnitsGeoJSON();
+                // The GeoJSON includes both oblast- and district-level polygons (they overlap
+                // geographically, since an oblast contains its districts). We render only the
+                // district level to avoid double-drawing overlapping shapes; oblast-level
+                // aggregates are still used for KPIs/series via the territory filter.
+                const districts = {
+                    type: 'FeatureCollection',
+                    features: (geojson.features || []).filter((f) => f.properties && f.properties.level === 'district'),
+                };
+                districtLayer = L.geoJSON(districts, {
+                    style: () => ({ color: '#ffc107', weight: 1.5, fillColor: NEUTRAL_COLOR, fillOpacity: 0.45 }),
+                    onEachFeature: (feature, layer) => {
+                        layer.on('click', () => {
+                            document.getElementById('territorySelect').value = feature.properties.id;
+                            selectUnit(feature.properties.id);
+                        });
+                        layer.on('mouseover', () => layer.setStyle({ weight: 3, color: '#ffffff' }));
+                        layer.on('mouseout', () => layer.setStyle({ weight: 1.5, color: '#ffc107' }));
+                        layer.bindTooltip(feature.properties.name_ru, { sticky: true });
+                    },
+                }).addTo(map);
+                fitAllDistricts();
+            } catch (e) {
+                showToast(e.message || 'Failed to load map data');
+            }
+        }
+
+        function fitAllDistricts() {
+            if (districtLayer) {
+                const bounds = districtLayer.getBounds();
+                if (bounds.isValid()) map.fitBounds(bounds.pad(0.1));
+            }
+        }
+
+        function recolorDistrict(unitId, value) {
+            if (!districtLayer) return;
+            districtLayer.eachLayer((layer) => {
+                if (String(layer.feature.properties.id) === String(unitId)) {
+                    const color = vhiColor(value);
+                    layer.setStyle({ fillColor: color, fillOpacity: 0.7 });
+                    const valueText = value === null || value === undefined ? window.GeoIntelI18n.t('empty.no_data') : value.toFixed(1);
+                    layer.bindPopup(`
+                        <div class="popup-header"><span>${layer.feature.properties.name_ru}</span></div>
+                        <div class="popup-body">
+                            <div class="popup-row"><span class="popup-label" data-i18n="kpi.vhi">VHI</span><span class="popup-val">${valueText}</span></div>
+                        </div>`, { className: 'custom-field-popup', maxWidth: 240 }).openPopup();
+                    map.flyToBounds(layer.getBounds().pad(0.5), { duration: 0.8 });
+                }
+            });
+        }
+
+        // ---- Territory selection ----
+        function initEventHandlers() {
+            document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+
+            const menuToggle = document.getElementById('menuToggle');
+            const sidebar = document.getElementById('sidebar');
+            const backdrop = document.getElementById('sidebarBackdrop');
+            menuToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('mobile-open');
+                backdrop.classList.toggle('active');
+            });
+            backdrop.addEventListener('click', () => {
+                sidebar.classList.remove('mobile-open');
+                backdrop.classList.remove('active');
+            });
+
+            document.getElementById('territorySelect').addEventListener('change', (e) => {
+                selectUnit(e.target.value || null);
+            });
+
+            document.getElementById('filterResetBtn').addEventListener('click', () => {
+                document.getElementById('territorySelect').value = '';
+                selectUnit(null);
+                fitAllDistricts();
+                showToast(window.GeoIntelI18n.t('toast.reset'));
+            });
+
+            document.getElementById('refreshBtn').addEventListener('click', async () => {
+                showToast(window.GeoIntelI18n.t('sync.checking'));
+                await Promise.all([checkHealth(), loadAlerts()]);
+                showToast(window.GeoIntelI18n.t('sync.ok'));
+            });
+
+            document.getElementById('exportPdfBtn').addEventListener('click', exportReport);
+        }
+
+        async function selectUnit(unitId) {
+            currentUnitId = unitId || null;
+            if (!currentUnitId) {
+                resetUnitPanels();
+                return;
+            }
+            const unit = districtOptions.find((d) => String(d.id) === String(currentUnitId));
+            document.getElementById('vhiChartUnitLabel').textContent = unit ? unitName(unit) : `#${currentUnitId}`;
+
+            await Promise.all([
+                loadMetricSeries('vhi'),
+                loadMetricSeries('soil_moisture'),
+                loadMetricSeries('yield_wheat'),
+            ]);
+        }
+
+        function resetUnitPanels() {
+            document.getElementById('vhiChartUnitLabel').textContent = '—';
+            ['kpiVhi', 'kpiSoil', 'kpiYield'].forEach((id) => {
+                const el = document.getElementById(id);
+                el.textContent = window.GeoIntelI18n.t('kpi.no_selection');
+                el.classList.add('placeholder');
+            });
+            setChartEmpty(vhiChart, 'vhiChartBox');
+            setChartEmpty(soilChart, 'soilChartBox');
+            setChartEmpty(yieldChart, 'yieldChartBox');
+        }
+
+        function setChartEmpty(chart, boxId) {
+            if (chart) {
+                chart.data.labels = [];
+                chart.data.datasets.forEach((ds) => (ds.data = []));
+                chart.update();
+            }
+        }
+
+        async function loadMetricSeries(metric) {
+            try {
+                const res = await window.GeoIntelAPI.getUnitSeries(currentUnitId, metric);
+                applyMetricSeries(metric, res.series || []);
+            } catch (e) {
+                if (e.status === 422 && e.body && e.body.error === 'ScopeTooFineError') {
+                    showToast(`${window.GeoIntelI18n.t('scope_too_fine.title')}: ${e.body.message}`);
+                } else {
+                    showToast(e.message || `Failed to load ${metric}`);
+                }
+                applyMetricSeries(metric, []);
+            }
+        }
+
+        function applyMetricSeries(metric, series) {
+            const sorted = series.slice().sort((a, b) => new Date(a.decade_start) - new Date(b.decade_start));
+            const latest = sorted.length ? sorted[sorted.length - 1] : null;
+
+            if (metric === 'vhi') {
+                const el = document.getElementById('kpiVhi');
+                if (latest) {
+                    el.textContent = latest.value.toFixed(1);
+                    el.classList.remove('placeholder');
+                    recolorDistrict(currentUnitId, latest.value);
+                } else {
+                    el.textContent = window.GeoIntelI18n.t('empty.no_data');
+                    el.classList.add('placeholder');
+                    recolorDistrict(currentUnitId, null);
+                }
+                vhiChart.data.labels = sorted.map((p) => p.decade_start);
+                vhiChart.data.datasets[0].data = sorted.map((p) => p.value);
+                vhiChart.update();
+            } else if (metric === 'soil_moisture') {
+                const el = document.getElementById('kpiSoil');
+                if (latest) {
+                    el.textContent = `${(latest.value * 100).toFixed(1)}%`;
+                    el.classList.remove('placeholder');
+                } else {
+                    el.textContent = window.GeoIntelI18n.t('empty.no_data');
+                    el.classList.add('placeholder');
+                }
+                soilChart.data.labels = sorted.map((p) => p.decade_start);
+                soilChart.data.datasets[0].data = sorted.map((p) => p.value * 100);
+                soilChart.update();
+            } else if (metric === 'yield_wheat') {
+                const el = document.getElementById('kpiYield');
+                if (latest) {
+                    el.textContent = `${latest.value.toFixed(1)} c/ha`;
+                    el.classList.remove('placeholder');
+                } else {
+                    el.textContent = window.GeoIntelI18n.t('empty.no_data');
+                    el.classList.add('placeholder');
+                }
+                yieldChart.data.labels = sorted.map((p) => p.decade_start);
+                yieldChart.data.datasets[0].data = sorted.map((p) => p.value);
+                yieldChart.update();
+            }
+        }
+
+        // ---- Charts ----
+        function getChartColors() {
+            const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+            return {
+                grid: dark ? '#1e324d' : '#e2e8f0',
+                text: dark ? '#94a3b8' : '#64748b',
+            };
+        }
+
+        function initCharts() {
+            const colors = getChartColors();
+            const baseLine = {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { display: true, position: 'top', align: 'end', labels: { color: colors.text, boxWidth: 10, boxHeight: 6, font: { size: 10 } } },
+                    tooltip: { backgroundColor: '#1a237e', cornerRadius: 4, padding: 8 },
+                },
+                scales: {
+                    x: { grid: { color: colors.grid, drawBorder: false }, ticks: { color: colors.text, font: { size: 10 } } },
+                    y: { grid: { color: colors.grid, drawBorder: false }, ticks: { color: colors.text, font: { size: 10 } } },
+                },
+            };
+
+            vhiChart = new Chart(document.getElementById('vhiTrendChart').getContext('2d'), {
+                type: 'line',
+                data: { labels: [], datasets: [{ label: 'VHI', data: [], borderColor: '#1565c0', backgroundColor: 'rgba(21,101,192,0.15)', fill: true, tension: 0.35, pointRadius: 3 }] },
+                options: { ...baseLine, scales: { ...baseLine.scales, y: { ...baseLine.scales.y, min: 0, max: 100 } } },
+            });
+
+            soilChart = new Chart(document.getElementById('soilMoistureChart').getContext('2d'), {
+                type: 'line',
+                data: { labels: [], datasets: [{ label: 'Soil Moisture (%)', data: [], borderColor: '#ffc107', backgroundColor: 'rgba(255,193,7,0.15)', fill: true, tension: 0.3, pointRadius: 3 }] },
+                options: baseLine,
+            });
+
+            yieldChart = new Chart(document.getElementById('yieldForecastChart').getContext('2d'), {
+                type: 'bar',
+                data: { labels: [], datasets: [{ label: 'Yield (c/ha)', data: [], backgroundColor: '#1a237e', borderColor: '#1565c0', borderWidth: 1, borderRadius: 3 }] },
+                options: baseLine,
+            });
+
+            resetUnitPanels();
+        }
+
+        function updateChartsTheme() {
+            const colors = getChartColors();
+            [vhiChart, soilChart, yieldChart].forEach((chart) => {
+                if (!chart) return;
+                Object.values(chart.options.scales).forEach((scale) => {
+                    if (scale.grid) scale.grid.color = colors.grid;
+                    if (scale.ticks) scale.ticks.color = colors.text;
+                });
+                if (chart.options.plugins.legend) chart.options.plugins.legend.labels.color = colors.text;
+                chart.update();
+            });
+        }
+
+        // ---- Export report ----
+        async function exportReport() {
+            if (!window.geointelAuth.isConfigured) {
+                showToast(window.GeoIntelI18n.t('auth.not_configured'));
+                return;
+            }
+            if (!window.geointelAuth.currentUser) {
+                showToast(window.GeoIntelI18n.t('auth.required'));
+                return;
+            }
+            if (!currentUnitId) {
+                showToast(window.GeoIntelI18n.t('export.need_selection'));
+                return;
+            }
+            showToast(window.GeoIntelI18n.t('export.generating'));
+            try {
+                const res = await window.GeoIntelAPI.getUnitSeries(currentUnitId, 'vhi');
+                const series = res.series || [];
+                const latestDecade = series.length ? series[series.length - 1].decade_start : new Date().toISOString().slice(0, 10);
+                await window.GeoIntelAPI.generateReport({
+                    scope: 'district',
+                    subject_id: Number(currentUnitId),
+                    decade: latestDecade,
+                    lang: window.GeoIntelI18n.currentLang(),
+                });
+                showToast(window.GeoIntelI18n.t('export.success'));
+            } catch (e) {
+                showToast(`${window.GeoIntelI18n.t('export.error')}: ${e.message || ''}`);
+            }
+        }
+
+        // ---- Toast ----
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').textContent = message;
+            toast.classList.add('show');
+            clearTimeout(window.__geointelToastTimer);
+            window.__geointelToastTimer = setTimeout(() => toast.classList.remove('show'), 3200);
+        }
+    </script>
+</body>
+</html>
