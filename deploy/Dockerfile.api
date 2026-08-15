@@ -13,6 +13,9 @@ RUN uv sync --frozen --no-dev
 
 # Copy application code
 COPY geointel/ geointel/
+# main.py mounts this directory as the static frontend; without it the API
+# still boots (mount is skipped if missing) but serves no UI.
+COPY frontend/ frontend/
 
 EXPOSE 8000
 
