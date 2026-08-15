@@ -22,3 +22,15 @@
   - `geointel/batch/run_daily.py`
 - Решения: Использован `on_conflict_do_update` для `upsert_metrics`, чтобы обновлять уже посчитанные декады. Взяты исторические экстремумы (min, max) для расчета VCI и TCI, при отсутствии истории используются текущие значения.
 - Незакрытое: Убедиться, что крон/scheduler корректно запускает `run_daily.py`.
+
+## 2026-08-15 15:20 — feat/a-all-providers-models
+- Сделано: A5 (Провайдеры погоды, почвы, осадков), A6 (Индекс SPI), A7 (Модели урожайности и водного баланса). Добавлено получение всех метрик в `run_daily.py`.
+- Файлы:
+  - `geointel/providers/precipitation/chirps.py`
+  - `geointel/providers/weather/openmeteo.py`
+  - `geointel/providers/soil/smap.py`, `era5_land.py`, `soilgrids.py`
+  - `geointel/domain/water_balance.py`
+  - `geointel/domain/yield_model.py`
+  - `tests/test_domain_models.py`
+- Решения: Использован `urllib.request` для OpenMeteo. SPI вычисляется как Z-score. Урожайность прогнозируется на основе отклонений VHI и SPI.
+- Незакрытое: Интеграция вызова функций прогноза урожая и водного баланса с реальными данными из БД.

@@ -29,3 +29,13 @@ def compute_vhi(vci: float, tci: float, alpha: float = 0.5) -> float:
     Range: 0 to 100.
     """
     return alpha * vci + (1.0 - alpha) * tci
+
+
+def compute_spi(precip: float, precip_mean: float, precip_std: float) -> float:
+    """
+    Computes a simplified Standardized Precipitation Index (SPI) using Z-score.
+    SPI = (P - mean) / std
+    """
+    if precip_std == 0.0:
+        return 0.0
+    return (precip - precip_mean) / precip_std

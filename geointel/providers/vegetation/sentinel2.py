@@ -9,26 +9,16 @@ from geointel.providers.gee import get_cropland_mask, reduce_regions
 class Sentinel2Provider:
     metric_id = "ndvi"
 
-    def fetch(
-        self, units: list[AdminUnitRef], start: date, end: date
-    ) -> dict[int, MeasuredValue]:
+    def fetch(self, units: list[AdminUnitRef], start: date, end: date) -> dict[int, MeasuredValue]:
         start_str = start.isoformat()
         end_str = end.isoformat()
 
-        col = ee.ImageCollection("COPERNICUS/S2_SR_HARMONIZED").filterDate(
-            start_str, end_str
-        )
+        col = ee.ImageCollection("COPERNICUS/S2_SR_HARMONIZED").filterDate(start_str, end_str)
 
         def mask_s2_clouds(image: ee.Image) -> ee.Image:
             scl = image.select("SCL")
             # 4: Vegetation, 5: Bare soils, 6: Water, 7: Unclassified, 11: Snow
-            mask = (
-                scl.eq(4)
-                .Or(scl.eq(5))
-                .Or(scl.eq(6))
-                .Or(scl.eq(7))
-                .Or(scl.eq(11))
-            )
+            mask = scl.eq(4).Or(scl.eq(5)).Or(scl.eq(6)).Or(scl.eq(7)).Or(scl.eq(11))
             return image.updateMask(mask)
 
         def add_ndvi(image: ee.Image) -> ee.Image:

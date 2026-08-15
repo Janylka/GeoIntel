@@ -9,9 +9,7 @@ from geointel.providers.gee import get_cropland_mask, reduce_regions
 class ModisNdviProvider:
     metric_id = "ndvi_hist"
 
-    def fetch(
-        self, units: list[AdminUnitRef], start: date, end: date
-    ) -> dict[int, MeasuredValue]:
+    def fetch(self, units: list[AdminUnitRef], start: date, end: date) -> dict[int, MeasuredValue]:
         start_str = start.isoformat()
         end_str = end.isoformat()
 
@@ -56,9 +54,7 @@ class ModisNdviProvider:
 class ModisLstProvider:
     metric_id = "lst"
 
-    def fetch(
-        self, units: list[AdminUnitRef], start: date, end: date
-    ) -> dict[int, MeasuredValue]:
+    def fetch(self, units: list[AdminUnitRef], start: date, end: date) -> dict[int, MeasuredValue]:
         start_str = start.isoformat()
         end_str = end.isoformat()
 

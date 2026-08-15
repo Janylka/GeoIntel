@@ -18,5 +18,6 @@ class MeasuredValue:
 class RasterProvider(Protocol):
     metric_id: str
 
-    def fetch(self, units: list[AdminUnitRef], start: date, end: date) -> dict[int, MeasuredValue]:
-        ...
+    def fetch(
+        self, units: list[AdminUnitRef], start: date, end: date
+    ) -> dict[int, MeasuredValue]: ...
