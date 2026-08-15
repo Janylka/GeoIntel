@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import json
 from pathlib import Path
 
@@ -18,3 +19,5 @@ def t(key: str, lang: str) -> str:
     """
     return TRANSLATIONS.get(lang, TRANSLATIONS[DEFAULT_LANG]).get(key,
            TRANSLATIONS[DEFAULT_LANG].get(key, key))
+=======
+>>>>>>> upstream/main

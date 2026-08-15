@@ -4,7 +4,7 @@ from geoalchemy2 import Geometry
 from sqlalchemy import DateTime, Float, ForeignKey, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from geointel.db.base import Base
+from geointel.db.session import Base
 
 
 class Customer(Base):

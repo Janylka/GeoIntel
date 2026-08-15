@@ -1,8 +1,9 @@
 import os
+from collections.abc import Generator
 
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 load_dotenv()
 
@@ -13,7 +14,14 @@ if not DATABASE_URL:
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-def get_db():
+
+# --- Добавлено для Блока Б ---
+class Base(DeclarativeBase):
+    pass
+# ------------------------------
+
+
+def get_db() -> Generator[Session, None, None]:
     db = SessionLocal()
     try:
         yield db

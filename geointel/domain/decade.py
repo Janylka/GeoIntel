@@ -28,7 +28,9 @@ def next_decade(d: date) -> date:
     if current_decade_start.day == 11:
         return current_decade_start.replace(day=21)
     # Last decade of the month
-    first_day_of_next_month = (current_decade_start.replace(day=28) + timedelta(days=4)).replace(day=1)
+    first_day_of_next_month = (current_decade_start.replace(day=28) + timedelta(days=4)).replace(
+        day=1
+    )
     return first_day_of_next_month
 
 
@@ -50,6 +52,7 @@ def decade_range(start: date, end: date) -> Generator[date, None, None]:
     while current <= end:
         yield current
         current = next_decade(current)
+
 
 def same_decade_of_year(d: date, year: int) -> date:
     """Returns the start date of the same decade but in a different year."""
