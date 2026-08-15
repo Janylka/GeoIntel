@@ -1,10 +1,10 @@
 .PHONY: up down migrate seed dev batch check fmt
 
 up:
-	docker-compose up -d
+	docker compose up -d
 
 down:
-	docker-compose down
+	docker compose down
 
 migrate:
 	uv run alembic upgrade head
@@ -28,7 +28,7 @@ fmt:
 	uv run ruff format .
 
 install:
-	uv pip install -e .[dev-dependencies]
+	uv pip install -e .[dev]
 
 init-db:
 	docker-compose exec -T db psql -U user -d geointel -c 'CREATE EXTENSION IF NOT EXISTS postgis;'

@@ -79,12 +79,13 @@ class Scope(str, Enum):
     DISTRICT = "district"
     FIELD = "field"
 
+
 @dataclass(frozen=True)
 class MetricDef:
     id: str
     source: str
     native_resolution_m: int
-    min_scope: Scope       # мельче — запрещено
+    min_scope: Scope  # мельче — запрещено
     unit: str
     higher_is_better: bool
 ```
