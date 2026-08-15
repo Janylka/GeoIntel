@@ -32,7 +32,7 @@ dev = [
 ]
 
 [tool.setuptools.packages.find]
-include = ["geointel*", "db*", "contracts*"]
+include = ["geointel*"]
 
 [tool.uv.sources]
 geointel = { path = ".", editable = true }
