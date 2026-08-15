@@ -1,0 +1,10 @@
+{
+    "errors.scope_too_fine": "Метрика {metric} недоступна на уровне {requested}. Минимальный уровень: {min_scope}.",
+    "errors.plan_limit_reached": "Достигнут лимит по тарифу.",
+    "errors.not_found": "Объект не найден.",
+    "alerts.threshold_breached": "Показатель {metric} перешел порог.",
+    "email.welcome.subject": "Добро пожаловать в GeoIntel",
+    "email.invoice.subject": "Счет на оплату №{invoice_id}",
+    "report.title": "Отчет GeoIntel за декаду {decade}",
+    "report.generated_at": "Сформирован {datetime}"
+}

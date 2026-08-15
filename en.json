@@ -1,0 +1,10 @@
+{
+    "errors.scope_too_fine": "Metric {metric} is not available at {requested} scope. Minimum scope is {min_scope}.",
+    "errors.plan_limit_reached": "Plan limit reached.",
+    "errors.not_found": "Object not found.",
+    "alerts.threshold_breached": "Metric {metric} has breached a threshold.",
+    "email.welcome.subject": "Welcome to GeoIntel",
+    "email.invoice.subject": "Invoice #{invoice_id}",
+    "report.title": "GeoIntel Report for decade {decade}",
+    "report.generated_at": "Generated on {datetime}"
+}

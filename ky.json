@@ -1,0 +1,10 @@
+{
+    "errors.scope_too_fine": "{metric} метрикасы {requested} деңгээлинде жеткиликтүү эмес. Минималдуу деңгээл: {min_scope}.",
+    "errors.plan_limit_reached": "Тариф боюнча лимитке жетти.",
+    "errors.not_found": "Объект табылган жок.",
+    "alerts.threshold_breached": "{metric} көрсөткүчү босогодон өттү.",
+    "email.welcome.subject": "GeoIntel'ге кош келиңиз",
+    "email.invoice.subject": "Төлөм үчүн эсеп №{invoice_id}",
+    "report.title": "{decade} декадасы үчүн GeoIntel отчету",
+    "report.generated_at": "Түзүлдү {datetime}"
+}
