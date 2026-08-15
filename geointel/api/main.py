@@ -3,7 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
-from geointel.api.routers import explain, geo, units
+from geointel.api.errors import register_error_handlers
+from geointel.api.routers import admin, alerts, billing, explain, fields, geo, ops, reports, units
 from geointel.db.session import get_db
 
 app = FastAPI(
@@ -11,6 +12,8 @@ app = FastAPI(
     version="1.0.0",
     description="API Блока Б для геопространственной аналитики и мониторинга засухи",
 )
+
+register_error_handlers(app)
 
 # Настройка CORS
 app.add_middleware(
@@ -25,6 +28,12 @@ app.add_middleware(
 app.include_router(units.router, prefix="/api/units", tags=["Units"])
 app.include_router(geo.router, prefix="/api/geo", tags=["GeoJSON"])
 app.include_router(explain.router, prefix="/api/explain", tags=["LLM Explain"])
+app.include_router(alerts.router, prefix="/api/alerts", tags=["Alerts"])
+app.include_router(ops.router, prefix="/api/ops", tags=["Operations"])
+app.include_router(fields.router, prefix="/api/fields", tags=["Fields"])
+app.include_router(billing.router, prefix="/api/billing", tags=["Billing"])
+app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
+app.include_router(reports.router, prefix="/api/reports", tags=["Reports"])
 
 
 @app.get("/health", tags=["Health"])

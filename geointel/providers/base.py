@@ -1,10 +1,3 @@
-<<<<<<< HEAD
-from sqlalchemy.orm import DeclarativeBase
-
-
-class Base(DeclarativeBase):
-    pass
-=======
 from dataclasses import dataclass
 from datetime import date
 from typing import Any, Protocol
@@ -28,4 +21,3 @@ class RasterProvider(Protocol):
     def fetch(
         self, units: list[AdminUnitRef], start: date, end: date
     ) -> dict[int, MeasuredValue]: ...
->>>>>>> upstream/main

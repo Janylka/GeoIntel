@@ -27,11 +27,9 @@ load_dotenv()
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 
-# Import your Base and all models here for autogenerate support
-from geointel.db.models.base import Base
-
-# from geointel.db.models.customer import Customer # Example
-# from geointel.db.models.metrics import MetricValue # Example
+# Import Base and all models here so autogenerate sees every table
+from geointel.db.models import *  # noqa: E402, F401, F403
+from geointel.db.session import Base  # noqa: E402
 
 target_metadata = Base.metadata
 
@@ -45,7 +43,9 @@ def get_url() -> str:
     """Returns the database URL from the environment variable."""
     db_url = os.getenv("DATABASE_URL")
     if not db_url:
-        raise ValueError("DATABASE_URL environment variable is not set. Please create a .env file.")
+        raise ValueError(
+            "DATABASE_URL environment variable is not set. Please create a .env file."
+        )
     return db_url
 
 

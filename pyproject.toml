@@ -55,3 +55,7 @@ module = [
     "geointel.contracts.*",
 ]
 strict = true
+
+[[tool.mypy.overrides]]
+module = ["firebase_admin.*"]
+ignore_missing_imports = true

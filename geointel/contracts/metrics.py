@@ -27,14 +27,17 @@ class MetricDef:
 
 METRICS: dict[str, MetricDef] = {
     "ndvi": MetricDef("ndvi", "Sentinel-2 SR Harmonized", 10, Scope.FIELD, "ratio", True, 3),
-    "ndvi_hist": MetricDef("ndvi_hist", "MODIS MOD13Q1", 250, Scope.DISTRICT, "ratio", True, 3),
+    "ndvi_hist": MetricDef(
+        "ndvi_hist", "MODIS MOD13Q1", 250, Scope.DISTRICT, "ratio", True, 3
+    ),
     "lst": MetricDef("lst", "MODIS MOD11A2", 1000, Scope.DISTRICT, "°C", False, 1),
     "vci": MetricDef("vci", "derived", 250, Scope.DISTRICT, "0-100", True, 1),
     "tci": MetricDef("tci", "derived", 1000, Scope.DISTRICT, "0-100", True, 1),
     "vhi": MetricDef("vhi", "derived", 1000, Scope.DISTRICT, "0-100", True, 1),
     "spi_1": MetricDef("spi_1", "CHIRPS Daily", 5000, Scope.DISTRICT, "sigma", True, 2),
     "spi_3": MetricDef("spi_3", "CHIRPS Daily", 5000, Scope.DISTRICT, "sigma", True, 2),
-    # SMAP provides soil moisture at a 9km resolution. A single pixel covers 81 sq km (8100 hectares).
+    # SMAP provides soil moisture at a 9km resolution.
+    # A single pixel covers 81 sq km (8100 hectares).
     # Displaying this metric at the field level would be misleading, as a pixel can contain
     # a mix of fields, slopes, and bare rock, especially in Kyrgyzstan's terrain.
     # Therefore, we enforce a minimum scope of 'district'.

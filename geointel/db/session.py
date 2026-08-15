@@ -18,6 +18,8 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 # --- Добавлено для Блока Б ---
 class Base(DeclarativeBase):
     pass
+
+
 # ------------------------------
 
 

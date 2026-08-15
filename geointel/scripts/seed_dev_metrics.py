@@ -1,10 +1,12 @@
 import os
 import random
 from datetime import date, datetime
+from typing import Any
 
 from dotenv import load_dotenv
 from sqlalchemy import MetaData, Table
 from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.engine import Connection
 
 from geointel.contracts.metrics import METRICS
 from geointel.db.session import engine
@@ -23,11 +25,6 @@ def check_env() -> None:
             f"Current APP_ENV is '{app_env}'."
         )
         exit(1)
-
-
-from typing import Any
-
-from sqlalchemy.engine import Connection
 
 
 def get_admin_units(conn: Connection) -> list[dict[str, Any]]:

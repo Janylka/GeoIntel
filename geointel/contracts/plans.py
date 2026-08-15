@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from enum import Enum
 
 
-class Plan(str, Enum):
+class Plan(str, Enum):  # noqa: UP042 -- str mixin required, frozen contract
     TRIAL = "trial"
     FARMER = "farmer"
     FARM = "farm"

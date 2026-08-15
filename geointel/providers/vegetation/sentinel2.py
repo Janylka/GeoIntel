@@ -41,11 +41,13 @@ class Sentinel2Provider:
         ndvi_masked = ndvi_median.updateMask(cropland_mask)
         # For quality, we want to know what fraction of the cropland has data.
         # So we update mask with cropland mask (it makes non-cropland transparent),
-        # leaving 0s where there was no cloud-free observation on cropland, and 1s where there was.
+        # leaving 0s where there was no cloud-free observation on cropland,
+        # and 1s where there was.
         is_valid_masked = is_valid.updateMask(cropland_mask)
 
         # Combine into one image so we only reduce once?
-        # If we combine, Earth Engine will apply the intersection of masks (which is ndvi_masked's mask).
+        # If we combine, Earth Engine will apply the intersection of masks
+        # (which is ndvi_masked's mask).
         # We don't want that. We run reduceRegions twice to be safe.
 
         ndvi_res = reduce_regions(ndvi_masked, units, ee.Reducer.mean(), scale=10)

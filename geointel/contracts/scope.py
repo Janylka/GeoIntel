@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class Scope(str, Enum):
+class Scope(str, Enum):  # noqa: UP042 -- str mixin required, frozen contract
     COUNTRY = "country"
     OBLAST = "oblast"
     DISTRICT = "district"

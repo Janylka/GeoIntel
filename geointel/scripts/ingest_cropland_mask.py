@@ -13,12 +13,14 @@ load_dotenv()
 
 
 def check_env() -> None:
-    """Ensure script is not run in production if we only want to test, but this is a data ingestion script so it should run everywhere."""
+    """No-op: this is a data ingestion script, meant to run in any environment."""
     pass
 
 
-def get_districts(conn: Connection) -> tuple[list[AdminUnitRef], dict[int, str], dict[int, str]]:
-    """Fetches districts and returns AdminUnitRefs, mapping of id->name, and mapping of id->oblast_name."""
+def get_districts(
+    conn: Connection,
+) -> tuple[list[AdminUnitRef], dict[int, str], dict[int, str]]:
+    """Fetches districts, a mapping of id->name, and a mapping of id->oblast_name."""
 
     # Need geometry as GeoJSON to pass to Earth Engine
     query = text("""

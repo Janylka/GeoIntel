@@ -64,9 +64,8 @@ class OpenMeteoProvider:
 
                     if valid_temps and valid_precips:
                         # Return mean temp as the primary value for this metric.
-                        # (Or we can define different metric_ids, but standard signature returns one value).
-                        # Let's return mean temperature here, or we can adapt the protocol for multiple.
-                        # Since MeasuredValue has one value, let's return temperature.
+                        # (Or we can define different metric_ids, but the standard
+                        # signature returns one value, so we return temperature here.)
                         mean_t = sum(valid_temps) / len(valid_temps)
                         out[unit.id] = MeasuredValue(value=mean_t, quality=1.0)
             except Exception:
