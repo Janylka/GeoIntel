@@ -19,11 +19,15 @@ app = FastAPI(
 
 register_error_handlers(app)
 
-# Настройка CORS
+# Auth is a manually-attached "Authorization: Bearer <token>" header, never a
+# cookie, so allow_credentials isn't needed -- and combined with a wildcard
+# origin it's an unnecessarily permissive pairing (browsers normally forbid
+# "*" with credentials; Starlette works around that by reflecting the actual
+# request origin instead, which quietly defeats the purpose of the wildcard).
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )

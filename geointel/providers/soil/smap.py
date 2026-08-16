@@ -12,7 +12,7 @@ class SmapProvider:
     Metric: sm (soil moisture)
     """
 
-    metric_id = "soil_moisture_smap"
+    metric_id = "soil_moisture"
 
     def fetch(self, units: list[AdminUnitRef], start: date, end: date) -> dict[int, MeasuredValue]:
         start_str = start.isoformat()

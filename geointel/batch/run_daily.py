@@ -175,7 +175,11 @@ def run_batch(target_date: date) -> None:
             add_raw("ndvi_hist", ndvi_res)
             add_raw("lst", lst_res)
             add_raw("precipitation", precip_res)
-            add_raw("soil_moisture_smap", smap_res)
+            # metric_id values below must match contracts/metrics.py exactly --
+            # the API and frontend query by these names, and the contract is
+            # frozen (AGENTS.md), so this file has to match it, not the other
+            # way around.
+            add_raw("soil_moisture", smap_res)
             add_raw("et0_era5", era5_res)
             add_raw("soilgrids_ocd", sg_res)
             add_raw("weather", weather_res)
@@ -218,7 +222,7 @@ def run_batch(target_date: date) -> None:
                 derived_records.append(
                     {
                         "unit_id": unit.id,
-                        "metric_id": "spi",
+                        "metric_id": "spi_1",
                         "decade_start": d_start,
                         "value": spi,
                         "quality": precip_res.quality,

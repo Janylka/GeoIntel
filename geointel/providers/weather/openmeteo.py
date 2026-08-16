@@ -1,9 +1,12 @@
 import json
+import logging
 import urllib.request
 from datetime import date
 from typing import Any
 
 from geointel.providers.base import AdminUnitRef, MeasuredValue
+
+logger = logging.getLogger(__name__)
 
 
 def get_centroid(geom: dict[str, Any]) -> tuple[float, float]:
@@ -69,7 +72,6 @@ class OpenMeteoProvider:
                         mean_t = sum(valid_temps) / len(valid_temps)
                         out[unit.id] = MeasuredValue(value=mean_t, quality=1.0)
             except Exception:
-                # Log or handle error if needed
-                pass
+                logger.warning("Open-Meteo fetch failed for unit %s", unit.id, exc_info=True)
 
         return out

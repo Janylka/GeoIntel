@@ -14,6 +14,12 @@ class ScopeTooFineError(ValueError):
         )
 
 
+class UnknownMetricError(ValueError):
+    def __init__(self, metric_id: str):
+        self.metric_id = metric_id
+        super().__init__(f"Metric '{metric_id}' is not defined.")
+
+
 @dataclass(frozen=True)
 class MetricDef:
     id: str
@@ -52,10 +58,10 @@ METRICS: dict[str, MetricDef] = {
 def get_metric_def(metric_id: str) -> MetricDef:
     """
     Retrieves a metric definition by its ID.
-    Raises a KeyError if the metric_id is not found.
+    Raises UnknownMetricError if the metric_id is not found.
     """
     if metric_id not in METRICS:
-        raise KeyError(f"Metric '{metric_id}' is not defined.")
+        raise UnknownMetricError(metric_id)
     return METRICS[metric_id]
 
 
@@ -65,7 +71,7 @@ def assert_scope_allowed(metric_id: str, scope: Scope) -> None:
 
     Raises:
         ScopeTooFineError: If the requested scope is finer than the metric's minimum scope.
-        KeyError: If the metric_id is not found.
+        UnknownMetricError: If the metric_id is not found.
     """
     metric_def = get_metric_def(metric_id)
     if scope.is_finer_than(metric_def.min_scope):
