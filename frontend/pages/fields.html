@@ -131,7 +131,13 @@
         </div>
       </div>
       <div class="corp-card-body">
-        <div class="map-hint" data-i18n="fields.map_instructions" style="margin-bottom:0.75rem;">...</div>
+        <div class="map-hint" style="margin-bottom:0.75rem; display:flex; align-items:center; justify-content:space-between; gap:0.75rem; flex-wrap:wrap;">
+          <span data-i18n="fields.map_instructions">...</span>
+          <button type="button" id="locateMeBtn" class="header-btn" style="background:var(--table-header-bg); color:var(--text-primary); border-color:var(--card-border); flex-shrink:0;">
+            <svg class="icon icon-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24"></path></svg>
+            <span data-i18n="fields.locate_me">Найти меня</span>
+          </button>
+        </div>
         <div id="fieldMap"></div>
         <form id="fieldForm" style="margin-top:1rem;">
           <div class="form-grid">
@@ -228,16 +234,47 @@
       attribution: "&copy; OpenStreetMap contributors",
     }).addTo(map);
 
-    map.on("click", (e) => {
-      center = e.latlng;
-      const radius = Number(document.getElementById("fieldRadius").value);
-      if (marker) map.removeLayer(marker);
-      if (circle) map.removeLayer(circle);
-      marker = L.marker(center).addTo(map);
-      circle = L.circle(center, { radius, color: "#1565c0", fillOpacity: 0.15 }).addTo(map);
-      updatePreview();
-    });
+    map.on("click", (e) => placeCenter(e.latlng));
   }
+
+  function placeCenter(latlng) {
+    center = latlng;
+    const radius = Number(document.getElementById("fieldRadius").value);
+    if (marker) map.removeLayer(marker);
+    if (circle) map.removeLayer(circle);
+    marker = L.marker(center).addTo(map);
+    circle = L.circle(center, { radius, color: "#1565c0", fillOpacity: 0.15 }).addTo(map);
+    updatePreview();
+  }
+
+  function locateMe() {
+    const btn = document.getElementById("locateMeBtn");
+    if (!navigator.geolocation) {
+      P.showToast(window.GeoIntelI18n.t("fields.geolocation_unsupported"), true);
+      return;
+    }
+    btn.disabled = true;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        btn.disabled = false;
+        const latlng = L.latLng(pos.coords.latitude, pos.coords.longitude);
+        map.setView(latlng, 15);
+        placeCenter(latlng);
+        P.showToast(window.GeoIntelI18n.t("fields.geolocation_found"));
+      },
+      (err) => {
+        btn.disabled = false;
+        const key =
+          err.code === err.PERMISSION_DENIED
+            ? "fields.geolocation_denied"
+            : "fields.geolocation_failed";
+        P.showToast(window.GeoIntelI18n.t(key), true);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  }
+
+  document.getElementById("locateMeBtn").addEventListener("click", locateMe);
 
   function circleToPolygon(centerLatLng, radiusMeters, points) {
     points = points || 32;
