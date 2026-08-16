@@ -1,6 +1,7 @@
+from collections.abc import Awaitable, Callable
 from pathlib import Path
 
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
@@ -55,4 +56,17 @@ def health_check(db: Session = Depends(get_db)) -> dict[str, str]:
 # and CORS stay simple. Must be mounted last: it's a catch-all for "/".
 FRONTEND_DIR = Path(__file__).resolve().parents[2] / "frontend"
 if FRONTEND_DIR.is_dir():
+
+    @app.middleware("http")
+    async def _no_cache_frontend(
+        request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
+        # Without this, browsers can silently keep serving a stale cached copy of
+        # index.html / assets/*.js after a deploy -- ETag/Last-Modified alone
+        # don't force revalidation on every load, only "no-cache" does.
+        response: Response = await call_next(request)
+        if not request.url.path.startswith("/api/"):
+            response.headers["Cache-Control"] = "no-cache"
+        return response
+
     app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")
