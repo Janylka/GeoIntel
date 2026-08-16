@@ -1,8 +1,11 @@
 import json
+import logging
 import os
 from typing import Any
 
 from google import genai
+
+logger = logging.getLogger(__name__)
 
 
 async def generate_explanation(
@@ -27,9 +30,13 @@ async def generate_explanation(
     Provide a concise, practical analysis and recommendations for the farmer in language: {lang}.
     """
 
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=prompt,
-    )
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt,
+        )
+    except Exception:
+        logger.warning("Gemini request failed for %s %s", scope, subject_id, exc_info=True)
+        return "The AI explanation is temporarily unavailable. Please try again shortly."
 
     return response.text or ""
