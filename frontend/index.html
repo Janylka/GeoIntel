@@ -576,7 +576,10 @@
         // ---- Data loading ----
         async function loadInitialData() {
             checkHealth();
-            await Promise.all([loadUnits(), loadAlerts(), loadMapData()]);
+            // loadMapData() needs unitsData (to find oblasts with no districts, e.g.
+            // Osh City) so it must run after loadUnits(), not alongside it.
+            await loadUnits();
+            await Promise.all([loadAlerts(), loadMapData()]);
         }
 
         async function checkHealth() {
@@ -741,12 +744,22 @@
             try {
                 const geojson = await window.GeoIntelAPI.getUnitsGeoJSON();
                 // The GeoJSON includes both oblast- and district-level polygons (they overlap
-                // geographically, since an oblast contains its districts). We render only the
-                // district level to avoid double-drawing overlapping shapes; oblast-level
-                // aggregates are still used for KPIs/series via the territory filter.
+                // geographically, since an oblast contains its districts). We render the
+                // district level to avoid double-drawing overlapping shapes -- except for an
+                // oblast with zero districts (Osh City has no further OSM subdivision, unlike
+                // Bishkek's 4 real city districts), where skipping it would leave a blank gap
+                // on the map. Those render their own (approximate) oblast-level shape instead.
+                const oblastsWithNoDistricts = new Set(
+                    unitsData.filter((o) => !(o.districts || []).length).map((o) => o.id)
+                );
                 const districts = {
                     type: 'FeatureCollection',
-                    features: (geojson.features || []).filter((f) => f.properties && f.properties.level === 'district'),
+                    features: (geojson.features || []).filter(
+                        (f) =>
+                            f.properties &&
+                            (f.properties.level === 'district' ||
+                                (f.properties.level === 'oblast' && oblastsWithNoDistricts.has(f.properties.id)))
+                    ),
                 };
                 districtLayer = L.geoJSON(districts, {
                     style: () => ({ color: '#ffc107', weight: 1.5, fillColor: NEUTRAL_COLOR, fillOpacity: 0.45 }),

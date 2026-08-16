@@ -158,6 +158,10 @@
               </select>
             </div>
             <div class="form-field">
+              <label data-i18n="fields.sowing_date_label">Дата сева</label>
+              <input type="date" id="fieldSowingDate" required>
+            </div>
+            <div class="form-field">
               <label><span data-i18n="fields.radius_label">Радиус, м</span>: <span id="radiusValue" class="mono">300</span> m</label>
               <input type="range" id="fieldRadius" min="30" max="3000" step="10" value="300">
             </div>
@@ -338,12 +342,13 @@
     errorBox.style.display = "none";
     const name = document.getElementById("fieldName").value.trim();
     const crop = document.getElementById("fieldCrop").value;
+    const sowingDate = document.getElementById("fieldSowingDate").value;
     const geo = currentGeoJSON();
     if (!geo) {
       P.showToast(window.GeoIntelI18n.t("fields.select_center_first"), true);
       return;
     }
-    if (!name || !crop) return;
+    if (!name || !crop || !sowingDate) return;
 
     const btn = document.getElementById("submitFieldBtn");
     btn.disabled = true;
@@ -352,6 +357,7 @@
         name,
         geojson: JSON.stringify(geo),
         crop,
+        sowing_date: sowingDate,
       });
       sessionFields.push({
         field_id: result.field_id,

@@ -3,6 +3,22 @@
 // (see deploy notes in README.md) so API_BASE is left empty by default.
 const API_BASE = window.GEOINTEL_API_BASE || "";
 
+// FastAPI's error bodies come in three shapes: a plain string (HTTPException),
+// a Pydantic validation array (422, one entry per bad field), or our own
+// error objects (e.g. ScopeTooFineError has "message"). Handle all three so
+// the UI never shows a raw stringified object.
+function extractErrorMessage(detail, status) {
+  if (typeof detail.detail === "string") return detail.detail;
+  if (Array.isArray(detail.detail)) {
+    return detail.detail
+      .map((e) => `${(e.loc || []).slice(1).join(".") || "field"}: ${e.msg}`)
+      .join("; ");
+  }
+  if (detail.message) return detail.message;
+  if (detail.error) return detail.error;
+  return `Request failed: ${status}`;
+}
+
 async function apiRequest(path, { method = "GET", body, auth = false } = {}) {
   const headers = { "Content-Type": "application/json" };
   if (auth) {
@@ -21,7 +37,7 @@ async function apiRequest(path, { method = "GET", body, auth = false } = {}) {
     } catch {
       detail = { detail: res.statusText };
     }
-    const err = new Error(detail.detail || detail.error || `Request failed: ${res.status}`);
+    const err = new Error(extractErrorMessage(detail, res.status));
     err.status = res.status;
     err.body = detail;
     throw err;

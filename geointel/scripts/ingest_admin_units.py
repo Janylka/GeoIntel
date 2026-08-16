@@ -88,11 +88,23 @@ DISTRICTS: dict[str, tuple[str, str]] = {
 }
 
 # geoBoundaries doesn't split Bishkek/Osh out as separate ADM1 shapes, so these two
-# get an approximate circular boundary around the city center instead of a real
-# municipal boundary. Radii are rough (city extents), not survey-grade.
+# get an approximate circular boundary around the city center for their own row
+# (used as the map fallback when a city has no real district subdivision -- see
+# Osh below). Radii are rough (city extents), not survey-grade.
 CITY_APPROXIMATIONS = {
     "Город Бишкек": (74.5698, 42.8746, 15000),
     "Город Ош": (72.7985, 40.5283, 8000),
+}
+
+# Bishkek genuinely is subdivided into 4 city districts (unlike Osh, which OSM has
+# no further administrative breakdown for). Pulled from OpenStreetMap
+# (boundary=administrative, admin_level=6), not present in the geoBoundaries ADM2
+# set at all. shapeName -> (name_ru, name_ky).
+BISHKEK_DISTRICTS: dict[str, tuple[str, str]] = {
+    "First of May District": ("Первомайский район", "Биринчи май району"),
+    "Lenin District": ("Ленинский район", "Ленин району"),
+    "October District": ("Октябрьский район", "Октябрь району"),
+    "Sverdlov District": ("Свердловский район", "Свердлов району"),
 }
 
 
@@ -121,7 +133,9 @@ def _upsert_unit(
         geom_sql = "ST_Multi(ST_Buffer(ST_SetSRID(ST_MakePoint(:lon, :lat), 4326)::geography, :radius)::geometry)"
         params: dict[str, Any] = {"lon": lon, "lat": lat, "radius": radius_m}
     else:
-        geom_sql = "ST_Multi(ST_GeomFromGeoJSON(:geom_json))"
+        # ST_MakeValid guards against minor ring-topology issues in hand-assembled
+        # geometry (e.g. the Bishkek districts, built from raw OSM way segments).
+        geom_sql = "ST_Multi(ST_MakeValid(ST_GeomFromGeoJSON(:geom_json)))"
         params = {"geom_json": geom_geojson}
 
     if existing:
@@ -179,6 +193,15 @@ def main() -> None:
                 )
                 district_count += 1
             print(f"Upserted {district_count} districts with real geometry.")
+
+            bishkek = _load_geojson("bishkek_districts.geojson")
+            for feature in bishkek["features"]:
+                shape_name = feature["properties"]["shapeName"]
+                name_ru, name_ky = BISHKEK_DISTRICTS[shape_name]
+                _upsert_unit(
+                    db, "district", name_ru, name_ky, shape_name, json.dumps(feature["geometry"]), None
+                )
+            print(f"Upserted {len(bishkek['features'])} Bishkek city districts with real geometry.")
 
             # Resolve parent_id spatially now that real geometry exists, rather
             # than relying on a hardcoded name mapping.
