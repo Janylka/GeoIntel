@@ -65,6 +65,7 @@ const GeoIntelAPI = {
     apiRequest("/api/reports/generate", { method: "POST", body: payload, auth: true }),
   registerField: (payload) =>
     apiRequest("/api/fields/register", { method: "POST", body: payload, auth: true }),
+  getFields: () => apiRequest("/api/fields/", { auth: true }),
   requestInvoice: (plan) =>
     apiRequest("/api/billing/invoices", { method: "POST", body: { plan }, auth: true }),
   getInvoices: () => apiRequest("/api/billing/invoices", { auth: true }),

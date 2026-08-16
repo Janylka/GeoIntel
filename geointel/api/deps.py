@@ -86,3 +86,24 @@ def get_current_user(
         logging.warning("Failed to send welcome email to %s", customer.email, exc_info=True)
 
     return customer
+
+
+def _admin_emails() -> set[str]:
+    raw = os.getenv("ADMIN_EMAILS", "")
+    return {e.strip().lower() for e in raw.split(",") if e.strip()}
+
+
+def require_admin(current_user: Customer = Depends(get_current_user)) -> Customer:
+    """
+    Gate for admin-only endpoints (e.g. confirming invoices).
+
+    Schema is frozen for the hackathon (see AGENTS.md -- no new migrations),
+    so admin status is an ADMIN_EMAILS allowlist rather than a customer.role
+    column. Revisit as a real column once migrations reopen.
+    """
+    if current_user.email.lower() not in _admin_emails():
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="This action requires admin privileges.",
+        )
+    return current_user

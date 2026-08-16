@@ -3,14 +3,37 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from geointel.api.deps import get_current_user
-from geointel.db.models.customer import Customer
+from geointel.db.models.customer import Customer, Field
 from geointel.db.session import get_db
 from geointel.services.registration import RegistrationError, register_field
 
 router = APIRouter()
+
+
+@router.get("/")
+def list_fields(
+    current_user: Customer = Depends(get_current_user), db: Session = Depends(get_db)
+) -> Any:
+    fields = db.scalars(
+        select(Field).where(Field.customer_id == current_user.id).order_by(Field.created_at.desc())
+    ).all()
+    return [
+        {
+            "field_id": f.id,
+            "name": f.name,
+            "crop": f.crop,
+            "sowing_date": f.sowing_date,
+            "area_ha": f.area_ha,
+            "cropland_ha": f.cropland_ha,
+            "district_id": f.district_id,
+            "created_at": f.created_at,
+        }
+        for f in fields
+    ]
 
 
 class FieldRegisterRequest(BaseModel):

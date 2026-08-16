@@ -178,11 +178,11 @@
       </div>
     </div>
 
-    <!-- Session table -->
+    <!-- Fields table -->
     <div class="corp-card" id="sessionTableCard">
       <div class="corp-card-header">
         <div class="card-title-group">
-          <span class="card-title" data-i18n="fields.session_table_title">Участки, зарегистрированные в этой сессии</span>
+          <span class="card-title" data-i18n="fields.session_table_title">Мои зарегистрированные участки</span>
         </div>
       </div>
       <div class="table-responsive-wrapper">
@@ -198,12 +198,12 @@
             </tr>
           </thead>
           <tbody id="sessionFieldsBody">
-            <tr id="sessionEmptyRow"><td colspan="6" style="text-align:center; color:var(--text-muted); padding:1.5rem;" data-i18n="fields.session_empty">В этой сессии ещё не зарегистрировано ни одного участка.</td></tr>
+            <tr id="sessionEmptyRow"><td colspan="6" style="text-align:center; color:var(--text-muted); padding:1.5rem;" data-i18n="fields.session_empty">Участков пока нет.</td></tr>
           </tbody>
         </table>
       </div>
       <div class="table-footer">
-        <span data-i18n="common.session_only">Данные показаны только за текущую сессию браузера</span>
+        <span data-i18n="fields.list_hint">Список участков, сохранённых в вашем аккаунте</span>
       </div>
     </div>
   </main>
@@ -229,7 +229,6 @@
 
   let map, marker, circle;
   let center = null; // {lat, lng}
-  const sessionFields = [];
 
   function initMap() {
     map = L.map("fieldMap").setView([41.20, 74.77], 7);
@@ -319,21 +318,36 @@
     updatePreview();
   });
 
-  function renderSessionRow(field) {
-    const emptyRow = document.getElementById("sessionEmptyRow");
-    if (emptyRow) emptyRow.remove();
+  function renderFieldsList(fields) {
     const tbody = document.getElementById("sessionFieldsBody");
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td class="mono">${field.field_id}</td>
-      <td>${P.escapeHtml(field.name)}</td>
-      <td>${P.escapeHtml(field.crop || "—")}</td>
-      <td class="mono">${field.area_ha != null ? field.area_ha.toFixed(2) : "—"}</td>
-      <td class="mono">${field.district_id}</td>
-      <td><span class="badge-status optimal" data-i18n="fields.status_registered">Зарегистрирован</span></td>
-    `;
-    tbody.appendChild(tr);
+    tbody.innerHTML = "";
+    if (!fields.length) {
+      tbody.innerHTML = `<tr id="sessionEmptyRow"><td colspan="6" style="text-align:center; color:var(--text-muted); padding:1.5rem;" data-i18n="fields.session_empty">Участков пока нет.</td></tr>`;
+      if (window.GeoIntelI18n) window.GeoIntelI18n.applyTranslations();
+      return;
+    }
+    fields.forEach((field) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td class="mono">${field.field_id}</td>
+        <td>${P.escapeHtml(field.name)}</td>
+        <td>${P.escapeHtml(field.crop || "—")}</td>
+        <td class="mono">${field.area_ha != null ? field.area_ha.toFixed(2) : "—"}</td>
+        <td class="mono">${field.district_id}</td>
+        <td><span class="badge-status optimal" data-i18n="fields.status_registered">Зарегистрирован</span></td>
+      `;
+      tbody.appendChild(tr);
+    });
     if (window.GeoIntelI18n) window.GeoIntelI18n.applyTranslations();
+  }
+
+  async function loadFields() {
+    try {
+      const fields = await window.GeoIntelAPI.getFields();
+      renderFieldsList(fields);
+    } catch (err) {
+      P.showToast(err.message || window.GeoIntelI18n.t("common.error_generic"), true);
+    }
   }
 
   async function onSubmit(e) {
@@ -353,20 +367,13 @@
     const btn = document.getElementById("submitFieldBtn");
     btn.disabled = true;
     try {
-      const result = await window.GeoIntelAPI.registerField({
+      await window.GeoIntelAPI.registerField({
         name,
         geojson: JSON.stringify(geo),
         crop,
         sowing_date: sowingDate,
       });
-      sessionFields.push({
-        field_id: result.field_id,
-        name,
-        crop,
-        area_ha: result.area_ha,
-        district_id: result.district_id,
-      });
-      renderSessionRow(sessionFields[sessionFields.length - 1]);
+      await loadFields();
       P.showToast(window.GeoIntelI18n.t("fields.registered_toast"));
       document.getElementById("fieldForm").reset();
       document.getElementById("fieldRadius").value = 300;
@@ -390,7 +397,10 @@
   function applyAuthState(user) {
     document.getElementById("signInGate").style.display = user ? "none" : "flex";
     document.getElementById("registerSection").style.display = user ? "flex" : "none";
-    if (user && !map) initMap();
+    if (user) {
+      if (!map) initMap();
+      loadFields();
+    }
   }
 
   P.initAuthUI(applyAuthState);

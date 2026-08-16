@@ -61,4 +61,16 @@ def get_invoices(
         .order_by(Invoice.issued_at.desc())
         .all()
     )
-    return invoices
+    return [
+        {
+            "id": inv.id,
+            "customer_id": inv.customer_id,
+            "plan": inv.plan,
+            "amount_tiyin": inv.amount_tiyin,
+            "status": inv.status,
+            "issued_at": inv.issued_at,
+            "paid_at": inv.paid_at,
+            "confirmed_by": inv.confirmed_by,
+        }
+        for inv in invoices
+    ]

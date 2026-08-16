@@ -130,7 +130,7 @@
   function formatTiyin(amountTiyin) {
     const som = amountTiyin / 100;
     const somStr = som.toLocaleString("ru-RU", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    return `${somStr} сом (${amountTiyin.toLocaleString("ru-RU")} тыйын)`;
+    return `${somStr} сом`;
   }
 
   function severityClass(severity) {
