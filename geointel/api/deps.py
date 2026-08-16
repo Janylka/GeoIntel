@@ -1,9 +1,11 @@
+import json
 import logging
+import os
 
 import firebase_admin
 from fastapi import Depends, Header, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from firebase_admin import auth
+from firebase_admin import auth, credentials
 from sqlalchemy.orm import Session
 
 from geointel.contracts.plans import Plan
@@ -16,10 +18,16 @@ from geointel.services.email_templates import render_welcome
 security = HTTPBearer()
 
 if not firebase_admin._apps:
-    try:
-        firebase_admin.initialize_app()
-    except Exception:
-        pass
+    # A bare initialize_app() creates an app with no project ID attached (it
+    # doesn't raise), and verify_id_token() then fails for every token with
+    # "A project ID is required to access the auth service." Building explicit
+    # credentials from FIREBASE_CREDENTIALS_JSON is what actually makes the
+    # app usable.
+    creds_json = os.getenv("FIREBASE_CREDENTIALS_JSON")
+    if creds_json:
+        firebase_admin.initialize_app(credentials.Certificate(json.loads(creds_json)))
+    else:
+        logging.warning("FIREBASE_CREDENTIALS_JSON is not set; sign-in will fail.")
 
 _SUPPORTED_LANGS = {"ru", "ky", "en"}
 
@@ -40,6 +48,7 @@ def get_current_user(
         decoded_token = auth.verify_id_token(token.credentials)
         uid = decoded_token.get("uid")
     except Exception:
+        logging.warning("Firebase token verification failed", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid authentication credentials",
