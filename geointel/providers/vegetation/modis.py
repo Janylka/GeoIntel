@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 
 import ee
 
@@ -10,7 +10,14 @@ class ModisNdviProvider:
     metric_id = "ndvi_hist"
 
     def fetch(self, units: list[AdminUnitRef], start: date, end: date) -> dict[int, MeasuredValue]:
-        start_str = start.isoformat()
+        # MOD13Q1 is a 16-day composite product on a fixed acquisition cycle, so
+        # a plain 10-day decade window can land entirely between two composites
+        # and match zero images (EE then errors trying to mask a 0-band result
+        # against the 1-band cropland mask). Look back far enough to guarantee
+        # catching at least one composite regardless of cycle phase; the median
+        # composite still only reflects real MODIS observations, never invented
+        # ones.
+        start_str = (start - timedelta(days=16)).isoformat()
         end_str = end.isoformat()
 
         col = ee.ImageCollection("MODIS/061/MOD13Q1").filterDate(start_str, end_str)
@@ -55,7 +62,9 @@ class ModisLstProvider:
     metric_id = "lst"
 
     def fetch(self, units: list[AdminUnitRef], start: date, end: date) -> dict[int, MeasuredValue]:
-        start_str = start.isoformat()
+        # Same reasoning as ModisNdviProvider: MOD11A2 is an 8-day composite on
+        # its own fixed cycle, so pad the lookback to guarantee catching one.
+        start_str = (start - timedelta(days=8)).isoformat()
         end_str = end.isoformat()
 
         col = ee.ImageCollection("MODIS/061/MOD11A2").filterDate(start_str, end_str)

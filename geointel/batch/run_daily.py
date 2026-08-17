@@ -7,7 +7,7 @@ from sqlalchemy import Connection, MetaData, Table, create_engine, text
 from sqlalchemy.dialects.postgresql import insert
 
 from geointel.db.session import DATABASE_URL
-from geointel.domain.decade import decade_start
+from geointel.domain.decade import decade_start, next_decade
 from geointel.domain.indices import compute_spi, compute_tci, compute_vci, compute_vhi
 from geointel.providers.gee import initialize
 from geointel.providers.precipitation.chirps import ChirpsProvider
@@ -111,6 +111,12 @@ def run_batch(target_date: date) -> None:
 
         # 1. Determine target decade
         d_start = decade_start(target_date)
+        # GEE's filterDate() is a half-open [start, end) interval -- passing the
+        # same date twice produces a zero-width range, which GEE rejects outright
+        # ("Empty date ranges not supported"). The upper bound has to be the start
+        # of the *next* decade to cover the full 10-day (or shorter, month-end)
+        # window a decade actually spans.
+        d_end = next_decade(d_start)
 
         # 2. Get districts
         units, _, _ = get_districts(conn)
@@ -127,25 +133,25 @@ def run_batch(target_date: date) -> None:
         openmeteo_provider = OpenMeteoProvider()
 
         logger.info("Fetching MODIS NDVI...")
-        ndvi_results = ndvi_provider.fetch(units, d_start, d_start)
+        ndvi_results = ndvi_provider.fetch(units, d_start, d_end)
 
         logger.info("Fetching MODIS LST...")
-        lst_results = lst_provider.fetch(units, d_start, d_start)
+        lst_results = lst_provider.fetch(units, d_start, d_end)
 
         logger.info("Fetching CHIRPS Precipitation...")
-        precip_results = chirps_provider.fetch(units, d_start, d_start)
+        precip_results = chirps_provider.fetch(units, d_start, d_end)
 
         logger.info("Fetching SMAP Soil Moisture...")
-        smap_results = smap_provider.fetch(units, d_start, d_start)
+        smap_results = smap_provider.fetch(units, d_start, d_end)
 
         logger.info("Fetching ERA5-Land ET0...")
-        era5_results = era5_provider.fetch(units, d_start, d_start)
+        era5_results = era5_provider.fetch(units, d_start, d_end)
 
         logger.info("Fetching SoilGrids OCD...")
-        sg_results = soilgrids_provider.fetch(units, d_start, d_start)
+        sg_results = soilgrids_provider.fetch(units, d_start, d_end)
 
         logger.info("Fetching OpenMeteo Weather...")
-        weather_results = openmeteo_provider.fetch(units, d_start, d_start)
+        weather_results = openmeteo_provider.fetch(units, d_start, d_end)
 
         # 4. Save raw metrics and compute indices
         raw_records: list[dict[str, Any]] = []
