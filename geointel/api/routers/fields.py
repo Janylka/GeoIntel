@@ -1,13 +1,16 @@
 from datetime import date
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from geointel.api.deps import get_current_user
+from geointel.contracts.metrics import assert_scope_allowed
+from geointel.contracts.scope import Scope
 from geointel.db.models.customer import Customer, Field
+from geointel.db.models.metrics import FieldMetric
 from geointel.db.session import get_db
 from geointel.services.registration import RegistrationError, register_field
 
@@ -34,6 +37,39 @@ def list_fields(
         }
         for f in fields
     ]
+
+
+@router.get("/{field_id}/series")
+def get_field_series(
+    field_id: int,
+    metric: str = Query(..., description="ID метрики (сейчас доступен только ndvi)"),
+    start_date: date = Query(date(2000, 1, 1)),
+    end_date: date = Query(date.today()),
+    current_user: Customer = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> Any:
+    field = db.get(Field, field_id)
+    if not field or field.customer_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Field not found")
+
+    assert_scope_allowed(metric, Scope.FIELD)
+
+    rows = db.scalars(
+        select(FieldMetric)
+        .where(
+            FieldMetric.field_id == field_id,
+            FieldMetric.metric_id == metric,
+            FieldMetric.decade_start >= start_date,
+            FieldMetric.decade_start <= end_date,
+        )
+        .order_by(FieldMetric.decade_start.asc())
+    ).all()
+
+    return {
+        "field_id": field_id,
+        "metric_id": metric,
+        "series": [{"decade_start": r.decade_start, "value": r.value} for r in rows],
+    }
 
 
 class FieldRegisterRequest(BaseModel):

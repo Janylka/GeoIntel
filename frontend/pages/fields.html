@@ -355,13 +355,13 @@
         <td class="mono">${field.area_ha != null ? field.area_ha.toFixed(2) : "—"}</td>
         <td class="mono">${field.district_id}</td>
         <td><span class="badge-status optimal" data-i18n="fields.status_registered">Зарегистрирован</span></td>
-        <td><button class="btn-secondary" style="padding:0.35rem 0.7rem; font-size:0.78rem;" data-view-metrics="${field.district_id}" data-field-name="${P.escapeHtml(field.name)}" data-i18n="fields.view_metrics">Показать</button></td>
+        <td><button class="btn-secondary" style="padding:0.35rem 0.7rem; font-size:0.78rem;" data-field-id="${field.field_id}" data-district-id="${field.district_id}" data-field-name="${P.escapeHtml(field.name)}" data-i18n="fields.view_metrics">Показать</button></td>
       `;
       tbody.appendChild(tr);
     });
-    tbody.querySelectorAll("[data-view-metrics]").forEach((btn) => {
+    tbody.querySelectorAll("[data-field-id]").forEach((btn) => {
       btn.addEventListener("click", () =>
-        showFieldMetrics(Number(btn.dataset.viewMetrics), btn.dataset.fieldName)
+        showFieldMetrics(Number(btn.dataset.fieldId), Number(btn.dataset.districtId), btn.dataset.fieldName)
       );
     });
     if (window.GeoIntelI18n) window.GeoIntelI18n.applyTranslations();
@@ -369,40 +369,72 @@
 
   let fieldMetricsChart = null;
 
-  async function showFieldMetrics(districtId, fieldName) {
-    const t = window.GeoIntelI18n.t;
-    const panel = document.getElementById("metricsPanel");
-    const errorBox = document.getElementById("metricsError");
-    errorBox.style.display = "none";
-    panel.style.display = "block";
-    panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    document.getElementById("metricsNote").textContent = t("fields.metrics_note").replace(
-      "{name}",
-      fieldName
-    );
-    try {
-      const series = await window.GeoIntelAPI.getUnitSeries(districtId, "vhi");
-      const points = series.series || [];
-      const ctx = document.getElementById("fieldMetricsChart").getContext("2d");
-      const data = {
-        labels: points.map((p) => p.decade_start),
+  function renderMetricsChart(labels, values, label, color) {
+    const ctx = document.getElementById("fieldMetricsChart").getContext("2d");
+    if (fieldMetricsChart) fieldMetricsChart.destroy();
+    fieldMetricsChart = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels,
         datasets: [
           {
-            label: "VHI",
-            data: points.map((p) => p.value),
-            borderColor: "#1565c0",
-            backgroundColor: "rgba(21, 101, 192, 0.12)",
+            label,
+            data: values,
+            borderColor: color,
+            backgroundColor: color.replace("rgb(", "rgba(").replace(")", ", 0.12)"),
             fill: true,
             tension: 0.25,
           },
         ],
-      };
-      if (fieldMetricsChart) fieldMetricsChart.destroy();
-      fieldMetricsChart = new Chart(ctx, {
-        type: "line",
-        data,
-        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 100 } } },
-      });
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: { y: { beginAtZero: true } },
+      },
+    });
+  }
+
+  async function showFieldMetrics(fieldId, districtId, fieldName) {
+    const t = window.GeoIntelI18n.t;
+    const panel = document.getElementById("metricsPanel");
+    const errorBox = document.getElementById("metricsError");
+    const noteBox = document.getElementById("metricsNote");
+    errorBox.style.display = "none";
+    panel.style.display = "block";
+    panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+
+    // Real per-field NDVI (Sentinel-2, needs compute_field_metrics.py to have run
+    // against this field) takes priority over the district-level fallback.
+    try {
+      const fieldSeries = await window.GeoIntelAPI.getFieldSeries(fieldId, "ndvi");
+      const points = fieldSeries.series || [];
+      if (points.length) {
+        noteBox.textContent = t("fields.metrics_note_field").replace("{name}", fieldName);
+        renderMetricsChart(
+          points.map((p) => p.decade_start),
+          points.map((p) => p.value),
+          "NDVI",
+          "rgb(46, 125, 50)"
+        );
+        return;
+      }
+    } catch {
+      // No per-field NDVI yet (or a transient failure) -- fall through to the
+      // district-level view below rather than block on it.
+    }
+
+    try {
+      const districtSeries = await window.GeoIntelAPI.getUnitSeries(districtId, "vhi");
+      const points = districtSeries.series || [];
+      errorBox.style.display = "none";
+      noteBox.textContent = t("fields.metrics_note").replace("{name}", fieldName);
+      renderMetricsChart(
+        points.map((p) => p.decade_start),
+        points.map((p) => p.value),
+        "VHI",
+        "rgb(21, 101, 192)"
+      );
     } catch (err) {
       errorBox.textContent = err.message || t("common.error_generic");
       errorBox.style.display = "block";
