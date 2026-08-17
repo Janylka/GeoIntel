@@ -6,6 +6,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from geointel.db.models.metrics import MetricValue
+from geointel.db.models.ops import AgentEvent
 from geointel.db.session import get_db
 from geointel.services.gemini import generate_explanation
 
@@ -42,6 +43,20 @@ async def explain_metrics(req: ExplainRequest, db: Session = Depends(get_db)) ->
         lang=req.lang,
         metrics_data=metrics_data,
     )
+
+    db.add(
+        AgentEvent(
+            agent="narrator",
+            action="explain",
+            subject=f"{req.scope}:{req.subject_id}:{req.decade.isoformat()}",
+            payload_json={
+                "input": {**metrics_data, "lang": req.lang},
+                "output": explanation,
+            },
+            status="ok",
+        )
+    )
+    db.commit()
 
     return {
         "scope": req.scope,

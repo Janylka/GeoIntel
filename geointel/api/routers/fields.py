@@ -11,6 +11,7 @@ from geointel.contracts.metrics import assert_scope_allowed
 from geointel.contracts.scope import Scope
 from geointel.db.models.customer import Customer, Field
 from geointel.db.models.metrics import FieldMetric
+from geointel.db.models.ops import AgentEvent
 from geointel.db.session import get_db
 from geointel.services.registration import RegistrationError, register_field
 
@@ -97,6 +98,32 @@ def create_field(
             request.crop,
             request.sowing_date,
         )
+
+        db.add(
+            AgentEvent(
+                agent="concierge",
+                action="field_registered",
+                subject=str(field.id),
+                payload_json={
+                    "input": {
+                        "customer_id": current_user.id,
+                        "name": request.name,
+                        "crop": request.crop,
+                        "sowing_date": request.sowing_date.isoformat(),
+                    },
+                    "output": {
+                        "field_id": field.id,
+                        "area_ha": field.area_ha,
+                        "cropland_ha": field.cropland_ha,
+                        "district_id": field.district_id,
+                        "low_cropland_fraction": low_cropland_fraction,
+                    },
+                },
+                status="ok",
+            )
+        )
+        db.commit()
+
         return {
             "status": "ok",
             "field_id": field.id,

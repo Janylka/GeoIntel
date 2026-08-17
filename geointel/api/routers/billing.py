@@ -9,6 +9,7 @@ from geointel.api.deps import get_current_user
 from geointel.contracts.plans import Plan
 from geointel.db.models.billing import Invoice
 from geointel.db.models.customer import Customer
+from geointel.db.models.ops import AgentEvent
 from geointel.db.session import get_db
 from geointel.services.billing import create_invoice, get_payment_details
 from geointel.services.email import send_email
@@ -42,6 +43,24 @@ def request_invoice(
         send_email(current_user.email, subject, body)
     except Exception:
         logging.warning("Failed to send invoice email for invoice %s", invoice.id, exc_info=True)
+
+    db.add(
+        AgentEvent(
+            agent="concierge",
+            action="invoice_issued",
+            subject=str(invoice.id),
+            payload_json={
+                "input": {"customer_id": current_user.id, "plan": request.plan.value},
+                "output": {
+                    "invoice_id": invoice.id,
+                    "amount_tiyin": invoice.amount_tiyin,
+                    "status": invoice.status,
+                },
+            },
+            status="ok",
+        )
+    )
+    db.commit()
 
     return {
         "invoice_id": invoice.id,

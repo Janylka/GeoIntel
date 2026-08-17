@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from geointel.api.deps import get_current_user
 from geointel.db.models.customer import Customer
 from geointel.db.models.metrics import MetricValue
-from geointel.db.models.ops import Report
+from geointel.db.models.ops import AgentEvent, Report
 from geointel.db.session import get_db
 from geointel.services.gemini import generate_explanation
 from geointel.services.pdf import generate_report_pdf
@@ -74,6 +74,20 @@ async def generate_report(
     db.add(report)
     db.commit()
     db.refresh(report)
+
+    db.add(
+        AgentEvent(
+            agent="narrator",
+            action="generate_report",
+            subject=f"{req.scope}:{req.subject_id}:{req.decade.isoformat()}",
+            payload_json={
+                "input": {**metrics_data, "lang": req.lang, "customer_id": current_user.id},
+                "output": {"report_id": report.id, "storage_path": report.storage_path},
+            },
+            status="ok",
+        )
+    )
+    db.commit()
 
     return {
         "report_id": report.id,

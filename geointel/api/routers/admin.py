@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from geointel.api.deps import require_admin
 from geointel.db.models.customer import Customer
+from geointel.db.models.ops import AgentEvent
 from geointel.db.session import get_db
 from geointel.services.billing import confirm_invoice
 from geointel.services.email import send_email
@@ -37,5 +38,22 @@ def admin_confirm_invoice(
                 "Failed to send payment confirmation email for invoice %s", invoice.id,
                 exc_info=True,
             )
+
+    db.add(
+        AgentEvent(
+            agent="concierge",
+            action="invoice_confirmed",
+            subject=str(invoice.id),
+            payload_json={
+                "input": {"invoice_id": invoice.id, "confirmed_by": current_user.auth_uid},
+                "output": {
+                    "status": invoice.status,
+                    "paid_at": invoice.paid_at.isoformat() if invoice.paid_at else None,
+                },
+            },
+            status="ok",
+        )
+    )
+    db.commit()
 
     return {"status": "ok", "invoice_id": invoice.id, "invoice_status": invoice.status}
